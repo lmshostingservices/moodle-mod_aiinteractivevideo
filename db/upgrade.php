@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Version information for mod_aiinteractivevideo.
+ * Upgrade steps for mod_aiinteractivevideo.
  *
  * @package    mod_aiinteractivevideo
  * @copyright  2026 LMS Hosting Services
@@ -24,8 +24,15 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mod_aiinteractivevideo';
-$plugin->version   = 2026092804;
-$plugin->release   = '1.0.8';
-$plugin->requires  = 2024042200; // Moodle 4.4.
-$plugin->maturity  = MATURITY_STABLE;
+/**
+ * Run database migrations from the installed version to this release.
+ *
+ * There have been no database schema changes since the initial install.xml.
+ * Do not create a savepoint for a version with no migration.
+ *
+ * @param int $oldversion Installed plugin version.
+ * @return bool True on successful upgrade.
+ */
+function xmldb_aiinteractivevideo_upgrade($oldversion) {
+    return true;
+}

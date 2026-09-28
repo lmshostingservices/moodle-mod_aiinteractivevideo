@@ -2,6 +2,11 @@
 
 All notable changes to AI interactive video (mod_aiinteractivevideo) are documented here.
 
+## [v1.0.8] - 2026-09-28
+
+### Fixed
+- Include Moodle's required db/upgrade.php in the archive so Marketplace accepts the package. No database schema change or migration is needed.
+
 ## [v1.0.7] - 2026-09-28
 
 ### Added
