@@ -24,6 +24,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$ADMIN->add('modsettings', new admin_externalpage(
+    'mod_aiinteractivevideo_activation',
+    get_string('act_title', 'mod_aiinteractivevideo'),
+    new moodle_url('/mod/aiinteractivevideo/activation.php'),
+    'moodle/site:config'
+));
+
 if ($ADMIN->fulltree) {
     // LMS Labs AI: the credentials stay on the server and are never sent to browsers.
     $source = \mod_aiinteractivevideo\local\credentials::source();
@@ -32,7 +39,9 @@ if ($ADMIN->fulltree) {
         'mod_aiinteractivevideo/lmslabsheading',
         get_string('lmslabs', 'mod_aiinteractivevideo'),
         get_string('lmslabs_settings_desc', 'mod_aiinteractivevideo', \mod_aiinteractivevideo\local\lmslabs::COST) .
-            html_writer::div(s($status), $source ? 'alert alert-success' : 'alert alert-warning')
+            html_writer::div(s($status), $source ? 'alert alert-info' : 'alert alert-warning') .
+            html_writer::link(new moodle_url('/mod/aiinteractivevideo/activation.php'),
+                get_string('act_settings_link', 'mod_aiinteractivevideo'))
     ));
     $settings->add(new admin_setting_configtext(
         'mod_aiinteractivevideo/lmslabs_siteid',

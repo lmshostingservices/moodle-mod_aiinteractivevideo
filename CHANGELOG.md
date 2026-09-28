@@ -2,6 +2,15 @@
 
 All notable changes to AI interactive video (mod_aiinteractivevideo) are documented here.
 
+## [v1.0.7] - 2026-09-28
+
+### Added
+- Administrator-only activation page linked from plugin settings: free access check, live release price and balance, explicit price-and-release-bound confirmation for a one-time site unlock.
+- Pending purchase recovery via a manual access check; uncertain outcomes cannot automatically retry or charge again.
+
+### Unchanged
+- Video generation, its 100-credit tariff and its UUID/same-body recovery protocol are unchanged.
+
 ## [v1.0.6] - 2026-09-28
 
 ### Changed
