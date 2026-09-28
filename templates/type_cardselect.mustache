@@ -1,0 +1,35 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_aiinteractivevideo/type_cardselect
+
+    Card select: tap every card that fits.
+
+    Example context (json):
+    {"items": [{"token": "a1", "text": "Aorta", "n": 1}]}
+}}
+<div class="aiv-cards" role="group">
+    {{#items}}
+    <button type="button" class="aiv-selcard" data-token="{{token}}" aria-pressed="false">
+        <span class="aiv-selcard-inner">
+            <span class="aiv-selcard-check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+            <span class="aiv-selcard-text">{{text}}</span>
+        </span>
+        <span class="aiv-mark" aria-hidden="true"></span>
+    </button>
+    {{/items}}
+</div>

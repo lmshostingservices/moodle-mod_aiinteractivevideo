@@ -1,0 +1,41 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_aiinteractivevideo/type_matching
+
+    Match up: connect each left item to its partner.
+
+    Example context (json):
+    {"items": [{"token": "l1", "text": "Aorta", "n": 1}], "groups": [{"token": "r1", "text": "Carries blood to the body", "n": 1}]}
+}}
+<div class="aiv-match">
+    <svg class="aiv-match-lines" data-region="lines" aria-hidden="true"></svg>
+    <div class="aiv-match-col aiv-match-left">
+        {{#items}}
+        <button type="button" class="aiv-match-item" data-side="left" data-token="{{token}}">
+            <span class="aiv-match-text">{{text}}</span><span class="aiv-match-dot" aria-hidden="true"></span><span class="aiv-mark" aria-hidden="true"></span>
+        </button>
+        {{/items}}
+    </div>
+    <div class="aiv-match-col aiv-match-right">
+        {{#groups}}
+        <button type="button" class="aiv-match-item" data-side="right" data-token="{{token}}">
+            <span class="aiv-match-dot" aria-hidden="true"></span><span class="aiv-match-text">{{text}}</span>
+        </button>
+        {{/groups}}
+    </div>
+</div>

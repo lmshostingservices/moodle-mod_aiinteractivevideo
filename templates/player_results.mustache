@@ -1,0 +1,101 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_aiinteractivevideo/player_results
+
+    Final results: score ring, stats, per-interaction breakdown and leaderboard.
+
+    Example context (json):
+    {
+        "mode": "test", "modename": "Test", "headline": "Great job!", "sub": "4 of 5 points", "percent": 80,
+        "pass": true, "passtext": "", "duration": "3:12", "firsttry": 4, "hints": 0, "rewatches": 1, "learn": false,
+        "attemptsleft": "", "canretry": true,
+        "sections": [{"number": 1, "title": "Intro", "typename": "Card select", "typekey": "cardselect", "solved": true,
+                      "statustext": "Correct first time", "points": 1, "tries": 1, "time": "0:12"}],
+        "hasleaderboard": true,
+        "leaderboard": [{"rank": 1, "name": "Ana S.", "score": 5, "maxscore": 5, "time": "2:40", "me": false, "top": true}]
+    }
+}}
+<div class="aiv-results aiv-results-{{mode}} {{#pass}}is-pass{{/pass}}{{^pass}}is-fail{{/pass}}">
+    <div class="aiv-results-main">
+        <span class="aiv-modetag aiv-modetag-{{mode}}">{{modename}}</span>
+        <div class="aiv-ring" data-region="ring" data-percent="{{percent}}">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+                <defs>
+                    <linearGradient id="aiv-ring-grad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" class="aiv-ring-stop1"/><stop offset="1" class="aiv-ring-stop2"/>
+                    </linearGradient>
+                </defs>
+                <circle class="aiv-ring-bg" cx="60" cy="60" r="52"/>
+                <circle class="aiv-ring-fg" cx="60" cy="60" r="52" data-region="ringfg"/>
+            </svg>
+            <div class="aiv-ring-label"><strong data-region="count">0</strong><span>%</span></div>
+        </div>
+        {{#passtext}}<div class="aiv-verdict-pill">{{passtext}}</div>{{/passtext}}
+        <h3 class="aiv-results-title">{{headline}}</h3>
+        <p class="aiv-results-sub">{{sub}}</p>
+        <div class="aiv-results-stats">
+            <div class="aiv-rstat"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>{{#str}} time, mod_aiinteractivevideo {{/str}}</span><strong>{{duration}}</strong></div>
+            <div class="aiv-rstat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span>{{#str}} correctfirsttry, mod_aiinteractivevideo {{/str}}</span><strong>{{firsttry}}</strong></div>
+            <div class="aiv-rstat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h6"/><path d="M4.5 15a8 8 0 102-8.5L4 10"/></svg><span>{{#str}} rewatches, mod_aiinteractivevideo {{/str}}</span><strong>{{rewatches}}</strong></div>
+            {{#learn}}<div class="aiv-rstat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/></svg><span>{{#str}} hints, mod_aiinteractivevideo {{/str}}</span><strong>{{hints}}</strong></div>{{/learn}}
+            {{#attemptsleft}}<div class="aiv-rstat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0z"/></svg><span>{{#str}} attemptsleft, mod_aiinteractivevideo {{/str}}</span><strong>{{attemptsleft}}</strong></div>{{/attemptsleft}}
+        </div>
+        {{#hasleaderboard}}
+        <div class="aiv-leaderboard">
+            <h4 class="aiv-kicker"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0z"/><path d="M17 5h3v2a3 3 0 01-3 3M7 5H4v2a3 3 0 003 3"/></svg>{{#str}} leaderboard, mod_aiinteractivevideo {{/str}}</h4>
+            <ol class="aiv-lb">
+                {{#leaderboard}}
+                <li class="aiv-lb-row {{#me}}is-me{{/me}} aiv-lb-rank{{rank}}">
+                    <span class="aiv-lb-rank">{{rank}}</span>
+                    <span class="aiv-lb-name">{{name}}{{#me}} <em>({{#str}} you, mod_aiinteractivevideo {{/str}})</em>{{/me}}</span>
+                    <span class="aiv-lb-score">{{score}}/{{maxscore}}</span>
+                    <span class="aiv-lb-time">{{time}}</span>
+                </li>
+                {{/leaderboard}}
+            </ol>
+        </div>
+        {{/hasleaderboard}}
+        <div class="aiv-results-actions">
+            <button type="button" class="aiv-btn aiv-btn-ghost" data-action="retry" {{^canretry}}disabled{{/canretry}}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h6"/><path d="M4.5 15a8 8 0 102-8.5L4 10"/></svg>
+                <span>{{#str}} tryagain, mod_aiinteractivevideo {{/str}}</span>
+            </button>
+            <button type="button" class="aiv-btn aiv-btn-primary" data-action="home">
+                <span>{{#str}} backtomenu, mod_aiinteractivevideo {{/str}}</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+        </div>
+    </div>
+    <div class="aiv-results-side">
+        <div class="aiv-breakdown">
+            <h4 class="aiv-kicker">{{#str}} interactions, mod_aiinteractivevideo {{/str}}</h4>
+            <ol class="aiv-breakdown-list">
+                {{#sections}}
+                <li class="aiv-bd {{#solved}}is-solved{{/solved}}{{^solved}}is-missed{{/solved}}">
+                    <span class="aiv-bd-icon" aria-hidden="true">{{#solved}}<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>{{/solved}}{{^solved}}<svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg>{{/solved}}</span>
+                    <span class="aiv-bd-main">
+                        <span class="aiv-bd-title">{{number}}. {{title}}</span>
+                        <span class="aiv-bd-meta"><span class="aiv-typechip aiv-type-{{typekey}}">{{typename}}</span><span>{{statustext}}</span><span>{{time}}</span></span>
+                    </span>
+                    <span class="aiv-bd-points">+{{points}}</span>
+                </li>
+                {{/sections}}
+            </ol>
+        </div>
+    </div>
+</div>

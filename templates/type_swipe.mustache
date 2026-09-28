@@ -1,0 +1,56 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_aiinteractivevideo/type_swipe
+
+    Fact or fiction: swipe through a deck of statements.
+
+    Example context (json):
+    {"items": [{"token": "s1", "text": "The heart has four chambers", "n": 1}], "total": 1}
+}}
+<div class="aiv-swipe">
+    <div class="aiv-deck" data-region="deck">
+        {{#items}}
+        <div class="aiv-swcard" data-token="{{token}}">
+            <span class="aiv-swcard-n">{{n}} / {{total}}</span>
+            <p class="aiv-swcard-text">{{text}}</p>
+            <span class="aiv-stamp aiv-stamp-fact">{{#str}} fact, mod_aiinteractivevideo {{/str}}</span>
+            <span class="aiv-stamp aiv-stamp-fiction">{{#str}} fiction, mod_aiinteractivevideo {{/str}}</span>
+        </div>
+        {{/items}}
+        <div class="aiv-deck-done" data-region="deckdone" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        </div>
+    </div>
+    <div class="aiv-swipe-buttons" data-region="swipebuttons">
+        <button type="button" class="aiv-swbtn aiv-swbtn-fiction" data-verdict="fiction">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>{{#str}} fiction, mod_aiinteractivevideo {{/str}}</span>
+        </button>
+        <button type="button" class="aiv-swbtn aiv-swbtn-fact" data-verdict="fact">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>{{#str}} fact, mod_aiinteractivevideo {{/str}}</span>
+        </button>
+    </div>
+    <ul class="aiv-verdicts" data-region="verdicts" hidden>
+        {{#items}}
+        <li class="aiv-verdict" data-token="{{token}}">
+            <span class="aiv-verdict-text">{{text}}</span>
+            <button type="button" class="aiv-verdict-toggle" data-token="{{token}}"></button>
+            <span class="aiv-mark" aria-hidden="true"></span>
+        </li>
+        {{/items}}
+    </ul>
+</div>

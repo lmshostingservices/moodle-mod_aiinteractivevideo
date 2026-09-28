@@ -1,0 +1,68 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_aiinteractivevideo/player_interaction
+
+    Interaction card. The type-specific body is rendered into data-region="body".
+
+    Example context (json):
+    {
+        "sectionid": 5, "typekey": "ordering", "typename": "Sequence", "ic": {"list": true},
+        "counter": "Interaction 2 of 5", "title": "The experiment", "prompt": "Put the steps in order",
+        "how": "Drag the cards", "learn": true, "hashint": true, "triesleft": "", "selectcount": ""
+    }
+}}
+<div class="aiv-card aiv-card-{{typekey}}" data-region="card" role="group" aria-label="{{counter}}">
+    <div class="aiv-card-glow" aria-hidden="true"></div>
+    <div class="aiv-card-head">
+        <span class="aiv-type-badge aiv-type-{{typekey}}">{{> mod_aiinteractivevideo/icon }}<span>{{typename}}</span></span>
+        <span class="aiv-card-counter">{{counter}}</span>
+        <span class="aiv-pointpill"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>1</span>
+    </div>
+    <div class="aiv-card-titles">
+        <span class="aiv-card-section">{{title}}</span>
+        <h3 class="aiv-card-prompt">{{prompt}}</h3>
+        <p class="aiv-card-how">{{how}}{{#selectcount}} · <strong data-region="selectcount">{{selectcount}}</strong>{{/selectcount}}</p>
+    </div>
+    <div class="aiv-card-body" data-region="body"></div>
+    <div class="aiv-hintbox" data-region="hintbox" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/></svg>
+        <span data-region="hinttext"></span>
+    </div>
+    <div class="aiv-card-foot" data-region="foot">
+        <div class="aiv-foot-left">
+            {{#learn}}
+            {{#hashint}}
+            <button type="button" class="aiv-btn aiv-btn-ghost aiv-btn-sm" data-action="hint">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/></svg>
+                <span>{{#str}} hint, mod_aiinteractivevideo {{/str}}</span>
+            </button>
+            {{/hashint}}
+            <button type="button" class="aiv-btn aiv-btn-ghost aiv-btn-sm" data-action="reveal">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>{{#str}} showanswer, mod_aiinteractivevideo {{/str}}</span>
+            </button>
+            {{/learn}}
+            {{#triesleft}}<span class="aiv-tries" data-region="tries">{{triesleft}}</span>{{/triesleft}}
+        </div>
+        <button type="button" class="aiv-btn aiv-btn-primary aiv-check" data-action="check" disabled>
+            <span>{{#str}} check, mod_aiinteractivevideo {{/str}}</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+        </button>
+    </div>
+    <div class="aiv-feedback-host" data-region="feedback"></div>
+</div>

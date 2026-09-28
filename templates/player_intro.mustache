@@ -1,0 +1,63 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_aiinteractivevideo/player_intro
+
+    Start screen for a mode: what to expect and how it works.
+
+    Example context (json):
+    {
+        "mode": "learn",
+        "badge": {"ic": {"book": true} },
+        "modename": "Learn",
+        "title": "Learn at your own pace",
+        "sub": "Watch, try and learn.",
+        "items": [{"ic": {"star": true}, "text": "5 interactions, 1 point each", "key": true}],
+        "resume": false
+    }
+}}
+<div class="aiv-intro aiv-intro-{{mode}}">
+    <div class="aiv-intro-hero">
+        <div class="aiv-intro-badge">{{#badge}}{{> mod_aiinteractivevideo/icon }}{{/badge}}</div>
+        <span class="aiv-modetag aiv-modetag-{{mode}}">{{modename}}</span>
+        <h3 class="aiv-intro-title">{{title}}</h3>
+        <p class="aiv-intro-sub">{{sub}}</p>
+    </div>
+    <div class="aiv-intro-body">
+        <h4 class="aiv-kicker">{{#str}} intro_whatyouget, mod_aiinteractivevideo {{/str}}</h4>
+        <ul class="aiv-intro-list">
+            {{#items}}
+            <li class="{{#key}}is-key{{/key}}"><span class="aiv-intro-ic">{{> mod_aiinteractivevideo/icon }}</span><span>{{text}}</span></li>
+            {{/items}}
+        </ul>
+        <div class="aiv-intro-demo" aria-hidden="true">
+            <span class="aiv-demo-video"><span class="aiv-demo-bar"><span></span></span></span>
+            <span class="aiv-demo-arrow"></span>
+            <span class="aiv-demo-card"><span></span><span></span><span></span></span>
+        </div>
+    </div>
+    <div class="aiv-intro-actions">
+        <button type="button" class="aiv-btn aiv-btn-ghost" data-action="introback">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+            <span>{{#str}} intro_back, mod_aiinteractivevideo {{/str}}</span>
+        </button>
+        <button type="button" class="aiv-btn aiv-btn-primary aiv-btn-lg" data-action="go">
+            <span>{{#resume}}{{#str}} continuevideo, mod_aiinteractivevideo {{/str}}{{/resume}}{{^resume}}{{#str}} intro_go, mod_aiinteractivevideo {{/str}}{{/resume}}</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+        </button>
+    </div>
+</div>

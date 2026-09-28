@@ -1,0 +1,230 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_aiinteractivevideo/view
+
+    The interactive video card: video on the left, activities on the right. JavaScript mounts the player.
+
+    Example context (json):
+    {
+        "uniqid": "aiv-1",
+        "config": "{}",
+        "accent": "indigo",
+        "name": "How the heart pumps blood",
+        "thumbnail": "https://i.ytimg.com/vi/abc/hqdefault.jpg",
+        "count": 5,
+        "durationtext": "4:27",
+        "ready": true,
+        "pending": false,
+        "failed": false, "failmessage": "", "buyurl": "",
+        "canmanage": true,
+        "editurl": "#",
+        "reporturl": "#",
+        "guest": false,
+        "passpoints": "",
+        "modes": [
+            {"key": "learn", "title": "Learn", "bestfor": "Best for learning", "enabled": true, "done": false, "meta": "",
+             "resume": false, "nomore": false, "rows": [{"label": "Hints", "text": "Yes", "yes": true}]}
+        ],
+        "chapters": [{"number": 1, "title": "Intro", "time": "0:00", "type": "Card select", "typekey": "cardselect"}]
+    }
+}}
+<div id="{{uniqid}}" class="aiv-app aiv-accent-{{accent}}" data-config="{{config}}">
+    <div class="aiv-shell" data-region="shell" tabindex="-1">
+        <div class="aiv-canvas" data-region="canvas">
+            <header class="aiv-topbar">
+                <div class="aiv-brand">
+                    <span class="aiv-logo" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="13" height="11" rx="2.5"/><path d="M7.5 7.5v4l3.5-2z"/><rect x="17.5" y="4" width="4" height="4.5" rx="1.2"/><rect x="17.5" y="10.5" width="4" height="4.5" rx="1.2"/></svg>
+                    </span>
+                    <div class="aiv-brand-text">
+                        <span class="aiv-eyebrow">{{#str}} modulename, mod_aiinteractivevideo {{/str}}</span>
+                        <h2 class="aiv-title">{{name}}</h2>
+                    </div>
+                    <span class="aiv-modetag" data-region="modetag" hidden></span>
+                </div>
+                <div class="aiv-tools">
+                    <div class="aiv-pill aiv-score" data-region="score" hidden>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>
+                        <strong data-region="scorevalue">0</strong><span class="aiv-pill-sub" data-region="scoretotal">/0</span>
+                    </div>
+                    <div class="aiv-pill aiv-timer" data-region="timer" hidden>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                        <span data-region="timervalue">0:00</span>
+                    </div>
+                    {{#canmanage}}
+                    <a class="aiv-btn aiv-btn-ghost aiv-btn-sm aiv-hide-sm" href="{{editurl}}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>
+                        <span>{{#str}} editinteractions, mod_aiinteractivevideo {{/str}}</span>
+                    </a>
+                    {{/canmanage}}
+                    {{#reporturl}}
+                    <a class="aiv-btn aiv-btn-ghost aiv-btn-sm aiv-hide-sm" href="{{reporturl}}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>
+                        <span>{{#str}} reports, mod_aiinteractivevideo {{/str}}</span>
+                    </a>
+                    {{/reporturl}}
+                    <button type="button" class="aiv-iconbtn" data-action="mute" aria-label="{{#str}} mute, mod_aiinteractivevideo {{/str}}" title="{{#str}} mute, mod_aiinteractivevideo {{/str}}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" class="aiv-i-on"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true" class="aiv-i-off"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>
+                    </button>
+                    <button type="button" class="aiv-iconbtn" data-action="fullscreen" aria-label="{{#str}} fullscreen, mod_aiinteractivevideo {{/str}}" title="{{#str}} fullscreen, mod_aiinteractivevideo {{/str}}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" class="aiv-i-on"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+                        <svg viewBox="0 0 24 24" aria-hidden="true" class="aiv-i-off"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+                    </button>
+                    <button type="button" class="aiv-iconbtn" data-action="exit" aria-label="{{#str}} exit, mod_aiinteractivevideo {{/str}}" title="{{#str}} exit, mod_aiinteractivevideo {{/str}}" hidden>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="aiv-stage" data-region="stage">
+                <section class="aiv-left">
+                    <div class="aiv-screen" data-region="screen">
+                        <div class="aiv-video" data-region="video"></div>
+                        <button type="button" class="aiv-poster" data-region="poster" data-action="poster" {{^ready}}disabled{{/ready}}>
+                            {{#thumbnail}}<img src="{{thumbnail}}" alt="" class="aiv-poster-img" loading="lazy">{{/thumbnail}}
+                            <span class="aiv-poster-shade" aria-hidden="true"></span>
+                            <span class="aiv-poster-play" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg>
+                            </span>
+                            <span class="aiv-poster-chips">
+                                {{#durationtext}}<span class="aiv-chip-dark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{durationtext}}</span>{{/durationtext}}
+                                {{#count}}<span class="aiv-chip-dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>{{#str}} intro_interactions, mod_aiinteractivevideo, {{count}} {{/str}}</span>{{/count}}
+                            </span>
+                            <span class="visually-hidden sr-only">{{#str}} play, mod_aiinteractivevideo {{/str}}</span>
+                        </button>
+                        <div class="aiv-overlay" data-region="overlay" hidden></div>
+                        <div class="aiv-toast" data-region="toast" role="status" hidden></div>
+                    </div>
+                    <div class="aiv-controls" data-region="controls" hidden>
+                        <button type="button" class="aiv-ctl" data-action="toggleplay" aria-label="{{#str}} play, mod_aiinteractivevideo {{/str}}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" class="aiv-i-play"><path d="M8 5.5v13l11-6.5z"/></svg>
+                            <svg viewBox="0 0 24 24" aria-hidden="true" class="aiv-i-pause"><path d="M8 5v14M16 5v14"/></svg>
+                        </button>
+                        <span class="aiv-time" data-region="time">0:00</span>
+                        <div class="aiv-timeline" data-region="timeline" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-label="{{#str}} time, mod_aiinteractivevideo {{/str}}">
+                            <div class="aiv-track">
+                                <div class="aiv-track-watched" data-region="watched"></div>
+                                <div class="aiv-track-played" data-region="played"></div>
+                            </div>
+                            <div class="aiv-markers" data-region="markers"></div>
+                            <div class="aiv-playhead" data-region="playhead"></div>
+                            <div class="aiv-tip" data-region="tip" hidden></div>
+                        </div>
+                        <span class="aiv-time aiv-time-total" data-region="duration">0:00</span>
+                        <button type="button" class="aiv-ctl aiv-speed" data-action="speed" aria-label="{{#str}} speed, mod_aiinteractivevideo {{/str}}" title="{{#str}} speed, mod_aiinteractivevideo {{/str}}">1×</button>
+                        <button type="button" class="aiv-ctl" data-action="videomute" aria-label="{{#str}} mute, mod_aiinteractivevideo {{/str}}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" class="aiv-i-on"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16 9a4 4 0 010 6"/></svg>
+                            <svg viewBox="0 0 24 24" aria-hidden="true" class="aiv-i-off"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>
+                        </button>
+                    </div>
+                    {{#ready}}
+                    <div class="aiv-inside" data-region="inside">
+                        <div class="aiv-inside-head">
+                            <span class="aiv-kicker">{{#str}} interactions, mod_aiinteractivevideo {{/str}}</span>
+                            <span class="aiv-inside-count">{{count}}</span>
+                        </div>
+                        <ol class="aiv-inside-list">
+                            {{#chapters}}
+                            <li><span class="aiv-inside-n">{{number}}</span><span class="aiv-inside-title">{{title}}</span><span class="aiv-typechip aiv-type-{{typekey}}">{{type}}</span><span class="aiv-inside-time">{{time}}</span></li>
+                            {{/chapters}}
+                        </ol>
+                    </div>
+                    {{/ready}}
+                </section>
+
+                <aside class="aiv-panel" data-region="panel">
+                    <div class="aiv-home" data-region="home">
+                        {{#pending}}
+                        <div class="aiv-building" data-region="building">
+                            <div class="aiv-building-orb" aria-hidden="true"><span></span><span></span><span></span></div>
+                            <h3>{{#str}} building, mod_aiinteractivevideo {{/str}}</h3>
+                            <ol class="aiv-building-steps">
+                                <li>{{#str}} building_ai1, mod_aiinteractivevideo {{/str}}</li>
+                                <li>{{#str}} building_ai2, mod_aiinteractivevideo {{/str}}</li>
+                                <li>{{#str}} building_ai3, mod_aiinteractivevideo {{/str}}</li>
+                                <li>{{#str}} building_ai4, mod_aiinteractivevideo {{/str}}</li>
+                            </ol>
+                            <p class="aiv-muted">{{#str}} aipending, mod_aiinteractivevideo {{/str}}</p>
+                        </div>
+                        {{/pending}}
+                        {{#failed}}
+                        <div class="aiv-alert" role="alert">{{failmessage}}{{#buyurl}} <a href="{{buyurl}}" target="_blank" rel="noopener">{{#str}} lmslabs_buy, mod_aiinteractivevideo {{/str}}</a>{{/buyurl}} <a href="{{editurl}}">{{#str}} editinteractions, mod_aiinteractivevideo {{/str}}</a></div>
+                        {{/failed}}
+                        {{^ready}}{{^pending}}
+                        <div class="aiv-empty">
+                            <div class="aiv-empty-art" aria-hidden="true">
+                                <svg viewBox="0 0 120 90"><rect x="8" y="12" width="104" height="66" rx="12"/><path d="M50 32v26l22-13z"/></svg>
+                            </div>
+                            <h3>{{#str}} notready, mod_aiinteractivevideo {{/str}}</h3>
+                            <p>{{#canmanage}}{{#str}} notready_manager, mod_aiinteractivevideo {{/str}}{{/canmanage}}{{^canmanage}}{{#str}} notready_student, mod_aiinteractivevideo {{/str}}{{/canmanage}}</p>
+                                {{#canmanage}}<a class="aiv-btn aiv-btn-primary" href="{{editurl}}">{{#str}} editinteractions, mod_aiinteractivevideo {{/str}}</a>{{/canmanage}}
+                        </div>
+                        {{/pending}}{{/ready}}
+                        {{#ready}}
+                        <div class="aiv-home-head">
+                            <h3>{{#str}} whatyouneed, mod_aiinteractivevideo {{/str}}</h3>
+                            <ol class="aiv-steps">
+                                <li><span class="aiv-step-n">1</span><span>{{#str}} howitworks_1, mod_aiinteractivevideo {{/str}}</span></li>
+                                <li><span class="aiv-step-n">2</span><span>{{#str}} howitworks_2, mod_aiinteractivevideo {{/str}}</span></li>
+                                <li><span class="aiv-step-n">3</span><span>{{#str}} howitworks_3, mod_aiinteractivevideo {{/str}}</span></li>
+                            </ol>
+                        </div>
+                        <div class="aiv-modes">
+                            {{#modes}}
+                            <div class="aiv-mode aiv-mode-{{key}} {{#done}}is-done{{/done}}">
+                                <div class="aiv-mode-top">
+                                    <span class="aiv-mode-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" class="aiv-i-learn"><path d="M3 6.5C5.5 5 8.5 5 12 7c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5z"/><path d="M12 7v12.5"/></svg>
+                                        <svg viewBox="0 0 24 24" class="aiv-i-test"><path d="M9 4h6l1 2h3v15H5V6h3z"/><path d="M9 13l2 2 4-4"/></svg>
+                                    </span>
+                                    <div class="aiv-mode-titles">
+                                        <h4 class="aiv-mode-title">{{title}}</h4>
+                                        <span class="aiv-mode-bestfor">{{bestfor}}</span>
+                                    </div>
+                                    {{#done}}<span class="aiv-mode-done" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>{{/done}}
+                                </div>
+                                <ul class="aiv-cmp">
+                                    {{#rows}}
+                                    <li class="{{#yes}}is-yes{{/yes}}{{^yes}}is-no{{/yes}}">
+                                        <span class="aiv-cmp-ic" aria-hidden="true">{{#yes}}<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>{{/yes}}{{^yes}}<svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg>{{/yes}}</span>
+                                        <span class="aiv-cmp-label">{{label}}</span>
+                                        <span class="aiv-cmp-text">{{text}}</span>
+                                    </li>
+                                    {{/rows}}
+                                </ul>
+                                {{#meta}}<p class="aiv-mode-meta">{{meta}}</p>{{/meta}}
+                                {{#nomore}}<p class="aiv-mode-meta aiv-warn">{{#str}} nomoreattempts, mod_aiinteractivevideo {{/str}}</p>{{/nomore}}
+                                <button type="button" class="aiv-btn aiv-btn-primary aiv-mode-start" data-action="start" data-mode="{{key}}" {{^enabled}}disabled{{/enabled}}>
+                                    <span>{{#resume}}{{#str}} continuevideo, mod_aiinteractivevideo {{/str}}{{/resume}}{{^resume}}{{#done}}{{#str}} startagain, mod_aiinteractivevideo {{/str}}{{/done}}{{^done}}{{#str}} start, mod_aiinteractivevideo {{/str}}{{/done}}{{/resume}}</span>
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                                </button>
+                            </div>
+                            {{/modes}}
+                        </div>
+                        {{#guest}}<p class="aiv-note">{{#str}} noguestattempts, mod_aiinteractivevideo {{/str}}</p>{{/guest}}
+                        {{/ready}}
+                    </div>
+                    <div class="aiv-dynamic" data-region="dynamic" hidden></div>
+                </aside>
+            </div>
+            <div class="aiv-results-host" data-region="results" hidden></div>
+            <div class="visually-hidden sr-only" aria-live="polite" data-region="live"></div>
+        </div>
+    </div>
+</div>

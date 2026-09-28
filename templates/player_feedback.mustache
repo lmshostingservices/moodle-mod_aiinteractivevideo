@@ -1,0 +1,62 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_aiinteractivevideo/player_feedback
+
+    Feedback after checking an answer.
+
+    Example context (json):
+    {
+        "correct": true, "headline": "Correct!", "points": "+1 point", "haspoints": true, "feedback": "Well done.",
+        "wrong": false, "skipped": false, "countdown": "", "learn": false, "canreveal": false, "last": false,
+        "continuelabel": "Continue video"
+    }
+}}
+<div class="aiv-feedback {{#correct}}is-correct{{/correct}}{{#wrong}}is-wrong{{/wrong}}{{#skipped}}is-skipped{{/skipped}}" role="status">
+    <div class="aiv-feedback-icon" aria-hidden="true">
+        {{#correct}}<svg viewBox="0 0 52 52"><circle class="aiv-fb-circle" cx="26" cy="26" r="23"/><path class="aiv-fb-tick" d="M15 27l7 7 15-16"/></svg>{{/correct}}
+        {{^correct}}<svg viewBox="0 0 52 52"><circle class="aiv-fb-circle" cx="26" cy="26" r="23"/><path class="aiv-fb-tick" d="M26 15v14M26 36v.5"/></svg>{{/correct}}
+    </div>
+    <div class="aiv-feedback-body">
+        <div class="aiv-feedback-headline">
+            <strong>{{headline}}</strong>
+            {{#haspoints}}<span class="aiv-feedback-points">{{points}}</span>{{/haspoints}}
+        </div>
+        {{#feedback}}<p class="aiv-feedback-text">{{feedback}}</p>{{/feedback}}
+        {{#countdown}}<p class="aiv-feedback-countdown" data-region="countdown">{{countdown}}</p>{{/countdown}}
+    </div>
+    <div class="aiv-feedback-actions">
+        {{#canreveal}}
+        <button type="button" class="aiv-btn aiv-btn-ghost aiv-btn-sm" data-action="reveal">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>{{#str}} showanswer, mod_aiinteractivevideo {{/str}}</span>
+        </button>
+        {{/canreveal}}
+        {{#wrong}}
+        <button type="button" class="aiv-btn aiv-btn-primary aiv-btn-sm" data-action="rewatch">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h6"/><path d="M4.5 15a8 8 0 102-8.5L4 10"/></svg>
+            <span>{{#str}} rewatchnow, mod_aiinteractivevideo {{/str}}</span>
+        </button>
+        {{/wrong}}
+        {{^wrong}}
+        <button type="button" class="aiv-btn aiv-btn-primary aiv-btn-sm" data-action="continue">
+            <span>{{continuelabel}}</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+        </button>
+        {{/wrong}}
+    </div>
+</div>

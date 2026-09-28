@@ -1,0 +1,41 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_aiinteractivevideo/type_categorize
+
+    Category sort: drag or tap each item into a group.
+
+    Example context (json):
+    {"items": [{"token": "i1", "text": "Aorta", "n": 1}], "groups": [{"token": "g1", "text": "Arteries", "n": 1}]}
+}}
+<div class="aiv-sort">
+    <div class="aiv-tray" data-region="tray" data-drop="tray" role="group">
+        {{#items}}
+        <button type="button" class="aiv-chip" data-token="{{token}}">
+            <span class="aiv-chip-text">{{text}}</span><span class="aiv-mark" aria-hidden="true"></span>
+        </button>
+        {{/items}}
+    </div>
+    <div class="aiv-bins">
+        {{#groups}}
+        <div class="aiv-bin" data-drop="bin" data-token="{{token}}" tabindex="0" role="button">
+            <div class="aiv-bin-head"><span class="aiv-bin-dot" aria-hidden="true"></span><span>{{text}}</span></div>
+            <div class="aiv-bin-items" data-region="binitems"></div>
+        </div>
+        {{/groups}}
+    </div>
+</div>

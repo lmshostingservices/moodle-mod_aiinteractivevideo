@@ -1,0 +1,138 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_aiinteractivevideo/editor
+
+    Interaction builder page.
+
+    Example context (json):
+    {
+        "cmid": 3, "name": "How the heart pumps", "thumbnail": "", "count": 1, "duration": "4:27", "transcriptlines": 93,
+        "hassections": true, "viewurl": "#", "settingsurl": "#", "addurl": "#",
+        "configured": true, "cost": 100, "failed": false, "failmessage": "", "buyurl": "", "pending": false,
+        "sections": [{"number": 1, "id": 5, "title": "Intro", "start": "0:00", "end": "0:44", "typekey": "cardselect",
+            "typename": "Card select", "prompt": "Tap", "content": "* A", "hint": "", "feedbackcorrect": "",
+            "feedbackwrong": "", "left": 0, "width": 20, "editurl": "#", "deleteurl": "#"}]
+    }
+}}
+<div class="aiv-editor" id="aiv-editor-{{cmid}}">
+    <div class="aiv-ed-hero">
+        {{#thumbnail}}<img class="aiv-ed-thumb" src="{{thumbnail}}" alt="">{{/thumbnail}}
+        <div class="aiv-ed-hero-text">
+            <span class="aiv-kicker">{{#str}} editinteractions, mod_aiinteractivevideo {{/str}}</span>
+            <h3>{{name}}</h3>
+            <div class="aiv-ed-stats">
+                {{#count}}<span class="aiv-ed-stat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>{{#str}} intro_interactions, mod_aiinteractivevideo, {{count}} {{/str}}</span>{{/count}}
+                <span class="aiv-ed-stat"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{{duration}}</span>
+                <span class="aiv-ed-stat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>{{#str}} builtfromtranscript, mod_aiinteractivevideo {{/str}} · {{transcriptlines}}</span>
+            </div>
+        </div>
+        <div class="aiv-ed-actions">
+            <a class="aiv-btn aiv-btn-primary" href="{{viewurl}}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg><span>{{#str}} preview {{/str}}</span>
+            </a>
+            <a class="aiv-btn aiv-btn-ghost" href="{{settingsurl}}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span>{{#str}} settings {{/str}}</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="aiv-ed-build" data-region="build" {{#pending}}data-pending="1"{{/pending}}>
+        <div class="aiv-ed-build-text">
+            <h4>{{#str}} builder, mod_aiinteractivevideo {{/str}}</h4>
+            {{^configured}}<div class="aiv-alert">{{#str}} lmslabs_notconfigured, mod_aiinteractivevideo {{/str}}</div>{{/configured}}
+            {{#configured}}
+            {{#pending}}<p class="aiv-muted">{{#str}} lmslabs_building, mod_aiinteractivevideo {{/str}}</p>{{/pending}}
+            {{#failed}}
+            <div class="aiv-alert" role="alert">
+                {{failmessage}}
+                {{#buyurl}} <a href="{{buyurl}}" target="_blank" rel="noopener">{{#str}} lmslabs_buy, mod_aiinteractivevideo {{/str}}</a>{{/buyurl}}
+            </div>
+            {{/failed}}
+            {{^pending}}{{^failed}}
+            <p class="aiv-muted">{{#hassections}}{{#str}} lmslabs_created, mod_aiinteractivevideo {{/str}}{{/hassections}}{{^hassections}}{{#str}} lmslabs_none, mod_aiinteractivevideo {{/str}}{{/hassections}}</p>
+            {{/failed}}{{/pending}}
+            {{/configured}}
+        </div>
+        {{#configured}}
+        <div class="aiv-ed-build-actions">
+            {{#failed}}
+            <button type="button" class="aiv-btn aiv-btn-primary" data-action="retry">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h6"/><path d="M4.5 15a8 8 0 102-8.5L4 10"/></svg>
+                <span>{{#str}} lmslabs_retry, mod_aiinteractivevideo {{/str}}</span>
+            </button>
+            {{/failed}}
+            {{^pending}}{{^failed}}
+            <button type="button" class="aiv-btn {{#hassections}}aiv-btn-ghost{{/hassections}}{{^hassections}}aiv-btn-primary{{/hassections}}" data-action="regenerate">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+                <span>{{#hassections}}{{#str}} lmslabs_regenerate, mod_aiinteractivevideo, {{cost}} {{/str}}{{/hassections}}{{^hassections}}{{#str}} lmslabs_create, mod_aiinteractivevideo, {{cost}} {{/str}}{{/hassections}}</span>
+            </button>
+            {{/failed}}{{/pending}}
+        </div>
+        {{/configured}}
+        <div class="aiv-ed-progress" data-region="progress" {{^pending}}hidden{{/pending}}>
+            <div class="aiv-building-orb" aria-hidden="true"><span></span><span></span><span></span></div>
+            <ol class="aiv-building-steps">
+                <li>{{#str}} building_ai1, mod_aiinteractivevideo {{/str}}</li>
+                <li>{{#str}} building_ai2, mod_aiinteractivevideo {{/str}}</li>
+                <li>{{#str}} building_ai3, mod_aiinteractivevideo {{/str}}</li>
+                <li>{{#str}} building_ai4, mod_aiinteractivevideo {{/str}}</li>
+            </ol>
+        </div>
+    </div>
+
+    {{#hassections}}
+    <div class="aiv-ed-timeline" aria-hidden="true">
+        {{#sections}}<span class="aiv-ed-seg aiv-type-{{typekey}}" data-left="{{left}}" data-width="{{width}}" title="{{number}}. {{title}}">{{number}}</span>{{/sections}}
+    </div>
+    {{/hassections}}
+
+    <ol class="aiv-ed-list">
+        {{#sections}}
+        <li class="aiv-ed-item">
+            <div class="aiv-ed-item-head">
+                <span class="aiv-ed-num">{{number}}</span>
+                <div class="aiv-ed-item-titles">
+                    <strong>{{title}}</strong>
+                    <span class="aiv-ed-item-meta"><span class="aiv-typechip aiv-type-{{typekey}}">{{typename}}</span><span>{{start}} – {{end}}</span></span>
+                </div>
+                <div class="aiv-ed-item-actions">
+                    <a class="aiv-btn aiv-btn-ghost aiv-btn-sm" href="{{editurl}}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg><span>{{#str}} edit {{/str}}</span>
+                    </a>
+                    <a class="aiv-btn aiv-btn-danger aiv-btn-sm" href="{{deleteurl}}" data-action="deletesection" aria-label="{{#str}} deletesection, mod_aiinteractivevideo {{/str}}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+                    </a>
+                </div>
+            </div>
+            <p class="aiv-ed-prompt">{{prompt}}</p>
+            <pre class="aiv-ed-content">{{content}}</pre>
+            <div class="aiv-ed-fb">
+                {{#hint}}<span><b>{{#str}} hint, mod_aiinteractivevideo {{/str}}:</b> {{hint}}</span>{{/hint}}
+                {{#feedbackcorrect}}<span class="is-ok"><b>{{#str}} correct, mod_aiinteractivevideo {{/str}}:</b> {{feedbackcorrect}}</span>{{/feedbackcorrect}}
+                {{#feedbackwrong}}<span class="is-bad"><b>{{#str}} wrong, mod_aiinteractivevideo {{/str}}:</b> {{feedbackwrong}}</span>{{/feedbackwrong}}
+            </div>
+        </li>
+        {{/sections}}
+    </ol>
+    {{#hassections}}
+    <a class="aiv-btn aiv-btn-ghost aiv-ed-add" href="{{addurl}}">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>{{#str}} add {{/str}}</span>
+    </a>
+    {{/hassections}}
+
+</div>

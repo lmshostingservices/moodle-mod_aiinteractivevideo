@@ -1,0 +1,190 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_aiinteractivevideo/report
+
+    Reports: insights per interaction and attempts.
+
+    Example context (json):
+    {
+        "tabs": [{"label": "Overview", "url": "#", "active": true}],
+        "modetabs": [],
+        "groupselector": "",
+        "insights": true, "attemptslist": false, "attemptview": false,
+        "kpis": [{"label": "Learners", "value": 3, "icon": {"ic": {"book": true} } }],
+        "hardest": "The experiment · 40%",
+        "hasrows": true, "learnmode": false,
+        "rows": [{"number": 1, "title": "Intro", "typekey": "cardselect", "typename": "Card select", "time": "0:00 – 0:44",
+            "answered": 3, "hasdata": true, "firstpct": 67, "firstlevel": "ok", "solvedpct": 100, "avgtries": 1.3,
+            "avgtime": "0:21", "avgrewatch": 0.3, "hints": 0, "reveals": 0, "skipped": 0, "hasflags": false, "flags": []}]
+    }
+}}
+<div class="aiv-report">
+    <div class="aiv-rep-top">
+        <nav class="aiv-seg" aria-label="{{#str}} reports, mod_aiinteractivevideo {{/str}}">
+            {{#tabs}}<a href="{{url}}" class="aiv-seg-btn {{#active}}is-active{{/active}}" {{#active}}aria-current="page"{{/active}}>{{label}}</a>{{/tabs}}
+        </nav>
+        {{#modetabs.0}}
+        <nav class="aiv-seg aiv-seg-sm">
+            {{#modetabs}}<a href="{{url}}" class="aiv-seg-btn {{#active}}is-active{{/active}}" {{#active}}aria-current="page"{{/active}}>{{label}}</a>{{/modetabs}}
+        </nav>
+        {{/modetabs.0}}
+        <div class="aiv-rep-group">{{{groupselector}}}</div>
+    </div>
+
+    <div class="aiv-kpis">
+        {{#kpis}}
+        <div class="aiv-kpi">
+            <span class="aiv-kpi-ic">{{#icon}}{{> mod_aiinteractivevideo/icon }}{{/icon}}</span>
+            <span class="aiv-kpi-label">{{label}}</span>
+            <strong class="aiv-kpi-value">{{value}}</strong>
+        </div>
+        {{/kpis}}
+    </div>
+
+    {{#insights}}
+    {{#hardest}}
+    <div class="aiv-rep-callout">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+        <span><b>{{#str}} toohard, mod_aiinteractivevideo {{/str}}:</b> {{hardest}}</span>
+    </div>
+    {{/hardest}}
+    <div class="aiv-rep-card">
+        <table class="aiv-rep-table">
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}} interaction, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} answered, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} firsttryrate, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} averagetries, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} averagetime, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} rewatches, mod_aiinteractivevideo {{/str}}</th>
+                    {{#learnmode}}<th scope="col">{{#str}} hints, mod_aiinteractivevideo {{/str}}</th><th scope="col">{{#str}} revealed, mod_aiinteractivevideo {{/str}}</th>{{/learnmode}}
+                    {{^learnmode}}<th scope="col">{{#str}} skipped, mod_aiinteractivevideo {{/str}}</th>{{/learnmode}}
+                    <th scope="col">{{#str}} status, mod_aiinteractivevideo {{/str}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#rows}}
+                <tr class="{{#hasflags}}is-flagged{{/hasflags}}">
+                    <td>
+                        <div class="aiv-rep-name"><span class="aiv-rep-n">{{number}}</span><div><strong>{{title}}</strong><span class="aiv-rep-sub"><span class="aiv-typechip aiv-type-{{typekey}}">{{typename}}</span> {{time}}</span></div></div>
+                    </td>
+                    <td class="aiv-num">{{answered}}</td>
+                    <td>
+                        {{#hasdata}}<span class="aiv-bar-wrap"><span class="aiv-bar aiv-bar-{{firstlevel}}"><span class="aiv-bar-fill" style="width: {{firstpct}}%;"></span></span><span class="aiv-bar-label">{{firstpct}}%</span></span>{{/hasdata}}
+                        {{^hasdata}}<span class="aiv-muted">–</span>{{/hasdata}}
+                    </td>
+                    <td class="aiv-num">{{avgtries}}</td>
+                    <td class="aiv-num">{{avgtime}}</td>
+                    <td class="aiv-num">{{avgrewatch}}</td>
+                    {{#learnmode}}<td class="aiv-num">{{hints}}</td><td class="aiv-num">{{reveals}}</td>{{/learnmode}}
+                    {{^learnmode}}<td class="aiv-num">{{skipped}}</td>{{/learnmode}}
+                    <td>{{#flags}}<span class="aiv-flag aiv-flag-{{kind}}">{{text}}</span>{{/flags}}{{^hasflags}}{{#hasdata}}<span class="aiv-flag aiv-flag-ok">✓</span>{{/hasdata}}{{/hasflags}}</td>
+                </tr>
+                {{/rows}}
+            </tbody>
+        </table>
+    </div>
+    {{/insights}}
+
+    {{#attemptslist}}
+    <div class="aiv-rep-card">
+        <div class="aiv-rep-toolbar">
+            {{#canmanage}}
+            <button type="submit" form="aiv-attempts-form" class="aiv-btn aiv-btn-danger aiv-btn-sm" data-action="deleteattempts" disabled>{{#str}} deleteattempts, mod_aiinteractivevideo {{/str}}</button>
+            <a class="aiv-btn aiv-btn-ghost aiv-btn-sm" href="{{regradeurl}}">{{#str}} recalculate, mod_aiinteractivevideo {{/str}}</a>
+            {{/canmanage}}
+            <div class="aiv-rep-download">{{{download}}}</div>
+        </div>
+        <form method="post" action="{{actionurl}}" id="aiv-attempts-form" data-region="attemptsform">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+        <input type="hidden" name="action" value="delete">
+        {{#hasattempts}}
+        <table class="aiv-rep-table">
+            <thead>
+                <tr>
+                    {{#canmanage}}<th scope="col"><input type="checkbox" data-action="selectall" aria-label="{{#str}} selectall {{/str}}"></th>{{/canmanage}}
+                    <th scope="col">{{#str}} learner, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} attempt, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} status, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} points, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} activetime, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} rewatches, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} hints, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} started, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#attempts}}
+                <tr>
+                    {{#canmanage}}<td><input type="checkbox" name="attemptids[]" value="{{id}}" data-region="attemptcheck" aria-label="{{fullname}}"></td>{{/canmanage}}
+                    <td><strong>{{fullname}}</strong></td>
+                    <td class="aiv-num">{{attempt}}</td>
+                    <td><span class="aiv-state {{#finished}}is-finished{{/finished}}">{{state}}</span></td>
+                    <td><span class="aiv-bar-wrap"><span class="aiv-bar aiv-bar-{{level}}"><span class="aiv-bar-fill" style="width: {{percent}}%;"></span></span><span class="aiv-bar-label">{{score}}</span></span></td>
+                    <td class="aiv-num">{{time}}</td>
+                    <td class="aiv-num">{{rewatches}}</td>
+                    <td class="aiv-num">{{hints}}</td>
+                    <td class="aiv-muted">{{started}}</td>
+                    <td><a class="aiv-btn aiv-btn-ghost aiv-btn-sm" href="{{viewurl}}">{{#str}} review, mod_aiinteractivevideo {{/str}}</a></td>
+                </tr>
+                {{/attempts}}
+            </tbody>
+        </table>
+        {{/hasattempts}}
+        {{^hasattempts}}<p class="aiv-muted aiv-rep-empty">{{#str}} noattempts, mod_aiinteractivevideo {{/str}}</p>{{/hasattempts}}
+        </form>
+    </div>
+    {{/attemptslist}}
+
+    {{#attemptview}}
+    <div class="aiv-rep-card">
+        <div class="aiv-rep-toolbar">
+            <a class="aiv-btn aiv-btn-ghost aiv-btn-sm" href="{{backurl}}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg><span>{{#str}} back {{/str}}</span></a>
+            <strong>{{detailname}}</strong><span class="aiv-muted">{{detailscore}}</span>
+        </div>
+        <table class="aiv-rep-table">
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}} interaction, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} status, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} points, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} averagetries, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} timespent, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} hints, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} rewatches, mod_aiinteractivevideo {{/str}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#detail}}
+                <tr>
+                    <td><div class="aiv-rep-name"><span class="aiv-rep-n">{{number}}</span><div><strong>{{title}}</strong><span class="aiv-rep-sub"><span class="aiv-typechip aiv-type-{{typekey}}">{{typename}}</span></span></div></div></td>
+                    <td><span class="aiv-state {{#ok}}is-finished{{/ok}}">{{status}}</span></td>
+                    <td class="aiv-num">{{points}}</td>
+                    <td class="aiv-num">{{tries}}</td>
+                    <td class="aiv-num">{{time}}</td>
+                    <td class="aiv-num">{{hints}}</td>
+                    <td class="aiv-num">{{rewatches}}</td>
+                </tr>
+                {{/detail}}
+            </tbody>
+        </table>
+    </div>
+    {{/attemptview}}
+</div>
