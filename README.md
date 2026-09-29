@@ -68,7 +68,7 @@ A point is earned when the interaction is answered correctly first time without 
 ## Installation
 1. Unzip into `mod/aiinteractivevideo`. On Moodle 5.1 and later this is `public/mod/aiinteractivevideo`.
 2. Visit *Site administration > Notifications*.
-3. Make sure LMS Labs Central Config has this site's Site ID and API key (or enter both in the plugin settings), and optionally set the defaults in *Site administration > Plugins > Activity modules > AI interactive video*.
+3. Make sure LMS Labs Central Config has this site's Site ID and API key (or enter both in the plugin settings). Central Config is selected by default, including on upgrades. In *Site administration > Plugins > Activity modules > AI interactive video*, check access for free and review an explicit one-time **50-credit** unlock from your existing balance. The confirmation is required before any acquisition charge; install, settings views and settings saves never charge. Credentials do not grant the paid entitlement. Existing entitlements remain valid and usage credits are charged separately.
 4. Add an **AI interactive video** activity to a course.
 
 ## Getting the transcript from YouTube

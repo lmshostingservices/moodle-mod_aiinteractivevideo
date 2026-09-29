@@ -24,24 +24,52 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$ADMIN->add('modsettings', new admin_externalpage(
-    'mod_aiinteractivevideo_activation',
-    get_string('act_title', 'mod_aiinteractivevideo'),
-    new moodle_url('/mod/aiinteractivevideo/activation.php'),
-    'moodle/site:config'
-));
-
 if ($ADMIN->fulltree) {
     // LMS Labs AI: the credentials stay on the server and are never sent to browsers.
     $source = \mod_aiinteractivevideo\local\credentials::source();
     $status = get_string('lmslabs_source_' . ($source ?: 'none'), 'mod_aiinteractivevideo');
+    $state = \mod_aiinteractivevideo\local\unlock::state();
+    $actionurl = new moodle_url('/mod/aiinteractivevideo/activation.php');
+    $settingsurl = new moodle_url('/admin/settings.php', ['section' => 'modsettingaiinteractivevideo']);
+    $access = html_writer::tag('p', s(get_string('act_status', 'mod_aiinteractivevideo', $state['status'])));
+    $access .= html_writer::tag('button', get_string('act_check', 'mod_aiinteractivevideo'), [
+        'type' => 'submit', 'name' => 'action', 'value' => 'check',
+        'formaction' => $actionurl->out(false), 'formmethod' => 'post', 'class' => 'btn btn-secondary btn-sm',
+    ]);
+    $access .= ' ' . html_writer::link(new moodle_url($settingsurl, ['unlockreview' => 1]),
+        get_string('act_review', 'mod_aiinteractivevideo'), ['class' => 'btn btn-secondary btn-sm']);
+    if (optional_param('unlockreview', 0, PARAM_BOOL)) {
+        $review = \mod_aiinteractivevideo\local\unlock::review();
+        if ($review['blocked'] === '' && ($review['release']['price'] ?? null) === 50) {
+            $release = $review['release'];
+            $access .= html_writer::tag('p', s(get_string('act_confirm', 'mod_aiinteractivevideo', (object)[
+                'price' => 50, 'balance' => $review['state']['balance'] ?? 'Unknown',
+                'version' => $release['version'], 'sha' => $release['sha'],
+            ])));
+            foreach (['confirm' => 1, 'expected' => 50, 'sha' => $release['sha']] as $name => $value) {
+                $access .= html_writer::empty_tag('input', [
+                    'type' => 'hidden', 'name' => $name, 'value' => $value,
+                ]);
+            }
+            $access .= html_writer::tag('button', get_string('act_buy', 'mod_aiinteractivevideo', 50), [
+                'type' => 'submit', 'name' => 'action', 'value' => 'unlock',
+                'formaction' => $actionurl->out(false), 'formmethod' => 'post', 'class' => 'btn btn-primary',
+            ]);
+        } else {
+            $access .= html_writer::div(s($review['blocked'] ?: 'The 50-credit price is unavailable.'),
+                'alert alert-warning');
+        }
+    }
     $settings->add(new admin_setting_heading(
         'mod_aiinteractivevideo/lmslabsheading',
         get_string('lmslabs', 'mod_aiinteractivevideo'),
         get_string('lmslabs_settings_desc', 'mod_aiinteractivevideo', \mod_aiinteractivevideo\local\lmslabs::COST) .
-            html_writer::div(s($status), $source ? 'alert alert-info' : 'alert alert-warning') .
-            html_writer::link(new moodle_url('/mod/aiinteractivevideo/activation.php'),
-                get_string('act_settings_link', 'mod_aiinteractivevideo'))
+            html_writer::div(s($status) . ' ' .
+                (\mod_aiinteractivevideo\local\credentials::central_installed()
+                    ? html_writer::link(new moodle_url('/admin/settings.php', ['section' => 'local_aiconfig']),
+                        get_string('act_central', 'mod_aiinteractivevideo')) : ''),
+                $source ? 'alert alert-info' : 'alert alert-warning') .
+            $access
     ));
     $settings->add(new admin_setting_configtext(
         'mod_aiinteractivevideo/lmslabs_siteid',

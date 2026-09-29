@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.9 (2026-09-29)
+The one-time 50-credit site unlock is reviewed and confirmed inside normal plugin settings rather than on a separate activation page. Central Config stays selected by default on new and existing installations. A GET or settings save never spends credits; the server entitlement check, release SHA/price validation, pending-request protection and separately billed generation usage remain in force.
+
 All notable changes to AI interactive video (mod_aiinteractivevideo) are documented here.
 
 ## [v1.0.8] - 2026-09-28

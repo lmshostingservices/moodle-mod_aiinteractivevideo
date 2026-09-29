@@ -177,7 +177,7 @@ final class unlock {
         $price = self::whole($entry['creditsRequired'] ?? null);
         $sha = $entry['sha256'] ?? '';
         if (($entry['status'] ?? null) !== 'ready' || ($entry['zipExists'] ?? null) !== true ||
-                ($entry['acquisitionMode'] ?? null) !== 'credit-unlock' || $price === null ||
+                ($entry['acquisitionMode'] ?? null) !== 'credit-unlock' || $price !== 50 ||
                 !is_string($sha) || !preg_match('/^[a-f0-9]{64}$/D', $sha)) {
             return ['ok' => false, 'reason' => 'Release, ZIP, price or SHA not confirmed'];
         }

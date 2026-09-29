@@ -29,17 +29,15 @@ use mod_aiinteractivevideo\local\credentials;
 use mod_aiinteractivevideo\local\unlock;
 
 require_login();
-admin_externalpage_setup('mod_aiinteractivevideo_activation');
 require_capability('moodle/site:config', context_system::instance());
-$url = new moodle_url('/mod/aiinteractivevideo/activation.php');
+$url = new moodle_url('/admin/settings.php', ['section' => 'modsettingaiinteractivevideo']);
 $PAGE->set_url($url);
 $action = optional_param('action', '', PARAM_ALPHA);
-if ($action !== '') {
-    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-        throw new moodle_exception('invalidrequest');
-    }
-    require_sesskey();
+// This endpoint only accepts explicit settings actions. A GET never checks or buys access.
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST' || !in_array($action, ['check', 'unlock'], true)) {
+    redirect($url);
 }
+require_sesskey();
 
 if ($action === 'check') {
     $state = unlock::verify();
