@@ -93,7 +93,8 @@ class ai_generator {
         $lines = [
             'You are an expert instructional designer who creates engaging interactive video lessons.',
             '',
-            'Below is the timestamped transcript of a YouTube video' .
+            'Below is the timestamped transcript of ' .
+                (video::source($instance) === video::SOURCE_UPLOAD ? 'a video' : 'a YouTube video') .
                 ($instance->name ? ' titled "' . $instance->name . '"' : '') . '. The video is about ' .
                 transcript::clock($end) . ' long.',
             'Divide the video into exactly ' . $count . ' sections that follow the real topic changes in the ' .

@@ -115,5 +115,6 @@ class restore_aiinteractivevideo_activity_structure_step extends restore_activit
      */
     protected function after_execute() {
         $this->add_related_files('mod_aiinteractivevideo', 'intro', null);
+        $this->add_related_files('mod_aiinteractivevideo', 'video', null);
     }
 }

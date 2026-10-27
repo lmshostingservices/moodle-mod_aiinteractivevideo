@@ -35,7 +35,7 @@ class backup_aiinteractivevideo_activity_structure_step extends backup_activity_
         $userinfo = $this->get_setting_value('userinfo');
 
         $root = new backup_nested_element('aiinteractivevideo', ['id'], [
-            'name', 'intro', 'introformat', 'videourl', 'videoid', 'videoduration', 'transcript', 'numinteractions',
+            'name', 'intro', 'introformat', 'videosource', 'videourl', 'videoid', 'videoduration', 'transcript', 'numinteractions',
             'generator', 'genstatus', 'types', 'allowlearn', 'allowtest', 'preventskip', 'sounds', 'leaderboard', 'accent',
             'maxtries', 'scoremode', 'grade', 'grademethod', 'maxattempts', 'completionfinish', 'timecreated', 'timemodified',
         ]);
@@ -78,6 +78,7 @@ class backup_aiinteractivevideo_activity_structure_step extends backup_activity_
         }
         $attempt->annotate_ids('user', 'userid');
         $root->annotate_files('mod_aiinteractivevideo', 'intro', null);
+        $root->annotate_files('mod_aiinteractivevideo', 'video', null);
 
         return $this->prepare_activity_structure($root);
     }

@@ -27,6 +27,7 @@ require_once(__DIR__ . '/lib.php');
 
 use mod_aiinteractivevideo\local\manager;
 use mod_aiinteractivevideo\local\transcript;
+use mod_aiinteractivevideo\local\video;
 use mod_aiinteractivevideo\local\youtube;
 
 $id = required_param('id', PARAM_INT);
@@ -49,7 +50,8 @@ $canattempt = !isguestuser() && ($canmanage || has_capability('mod/aiinteractive
 $sections = manager::get_sections($instance->id);
 // A queued AI build hides the activity from learners for up to 15 minutes; after that the built-in version is used.
 $pending = (int)$instance->genstatus === manager::GEN_PENDING && time() - (int)$instance->timemodified < 900;
-$ready = $sections && $instance->videoid !== '' && (!$pending || $canmanage);
+$ready = $sections && video::has_video($instance, $context) && (!$pending || $canmanage);
+$videosource = video::source($instance);
 $summary = manager::user_summary($instance, (int)$USER->id);
 
 // Pass mark (grade to pass) in points.
@@ -146,7 +148,9 @@ $duration = (int)$instance->videoduration ?: (int)(end($sections) ? end($section
 
 $config = [
     'cmid' => (int)$cm->id,
+    'videosource' => $videosource,
     'videoid' => $instance->videoid,
+    'videofileurl' => $videosource === video::SOURCE_UPLOAD ? video::file_url($context) : '',
     'name' => format_string($instance->name, true, ['context' => $context, 'escape' => false]),
     'canattempt' => $canattempt,
     'canmanage' => $canmanage,
@@ -170,7 +174,8 @@ $templatedata = [
     'config' => json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT),
     'accent' => $instance->accent,
     'name' => format_string($instance->name, true, ['context' => $context, 'escape' => false]),
-    'thumbnail' => $instance->videoid !== '' ? youtube::thumbnail($instance->videoid) : '',
+    'thumbnail' => $videosource === video::SOURCE_YOUTUBE && $instance->videoid !== ''
+        ? youtube::thumbnail($instance->videoid) : '',
     'count' => count($sections),
     'durationtext' => $duration ? transcript::clock($duration) : '',
     'modes' => $modes,

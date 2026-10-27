@@ -32,6 +32,7 @@ use mod_aiinteractivevideo\local\manager;
 use mod_aiinteractivevideo\local\interaction;
 use mod_aiinteractivevideo\local\segmenter;
 use mod_aiinteractivevideo\local\transcript;
+use mod_aiinteractivevideo\local\video;
 use mod_aiinteractivevideo\local\youtube;
 
 /**
@@ -55,8 +56,20 @@ class mod_aiinteractivevideo_mod_form extends moodleform_mod {
         $this->standard_intro_elements();
 
         // Video and transcript.
-        $mform->addElement('header', 'videohdr', get_string('videourl', 'mod_aiinteractivevideo'));
+        $mform->addElement('header', 'videohdr', get_string('videohdr', 'mod_aiinteractivevideo'));
         $mform->setExpanded('videohdr');
+        $mform->addElement(
+            'select',
+            'videosource',
+            get_string('videosource', 'mod_aiinteractivevideo'),
+            [
+                video::SOURCE_YOUTUBE => get_string('videosource_youtube', 'mod_aiinteractivevideo'),
+                video::SOURCE_UPLOAD => get_string('videosource_upload', 'mod_aiinteractivevideo'),
+            ]
+        );
+        $mform->setDefault('videosource', video::SOURCE_YOUTUBE);
+        $mform->addHelpButton('videosource', 'videosource', 'mod_aiinteractivevideo');
+
         $mform->addElement(
             'text',
             'videourl',
@@ -65,8 +78,18 @@ class mod_aiinteractivevideo_mod_form extends moodleform_mod {
             'placeholder' => 'https://www.youtube.com/watch?v=…']
         );
         $mform->setType('videourl', PARAM_URL);
-        $mform->addRule('videourl', null, 'required', null, 'client');
         $mform->addHelpButton('videourl', 'videourl', 'mod_aiinteractivevideo');
+        $mform->hideIf('videourl', 'videosource', 'eq', video::SOURCE_UPLOAD);
+
+        $mform->addElement(
+            'filemanager',
+            'videofile',
+            get_string('videofile', 'mod_aiinteractivevideo'),
+            null,
+            video::filemanager_options($this->get_course())
+        );
+        $mform->addHelpButton('videofile', 'videofile', 'mod_aiinteractivevideo');
+        $mform->hideIf('videofile', 'videosource', 'eq', video::SOURCE_YOUTUBE);
 
         $mform->addElement(
             'textarea',
@@ -75,8 +98,16 @@ class mod_aiinteractivevideo_mod_form extends moodleform_mod {
             ['rows' => 12, 'cols' => 80, 'class' => 'aiv-transcript-input']
         );
         $mform->setType('transcript', PARAM_TEXT);
-        $mform->addRule('transcript', null, 'required', null, 'client');
         $mform->addHelpButton('transcript', 'transcript', 'mod_aiinteractivevideo');
+
+        $mform->addElement(
+            'filepicker',
+            'transcriptfile',
+            get_string('transcriptfile', 'mod_aiinteractivevideo'),
+            null,
+            ['accepted_types' => video::TRANSCRIPT_TYPES, 'maxbytes' => video::TRANSCRIPT_MAXBYTES]
+        );
+        $mform->addHelpButton('transcriptfile', 'transcriptfile', 'mod_aiinteractivevideo');
 
         $counts = [];
         for ($i = 1; $i <= 20; $i++) {
@@ -217,12 +248,39 @@ class mod_aiinteractivevideo_mod_form extends moodleform_mod {
      */
     public function data_preprocessing(&$defaultvalues) {
         parent::data_preprocessing($defaultvalues);
+        $draftitemid = file_get_submitted_draft_itemid('videofile');
+        file_prepare_draft_area(
+            $draftitemid,
+            $this->context ? $this->context->id : null,
+            'mod_aiinteractivevideo',
+            video::FILEAREA,
+            0,
+            video::filemanager_options($this->get_course())
+        );
+        $defaultvalues['videofile'] = $draftitemid;
+        if (empty($defaultvalues['videosource'])) {
+            $defaultvalues['videosource'] = video::SOURCE_YOUTUBE;
+        }
         if (!empty($defaultvalues['types'])) {
             $allowed = explode(',', $defaultvalues['types']);
             foreach (interaction::TYPES as $type) {
                 $defaultvalues['typeselect'][$type] = in_array($type, $allowed, true) ? 1 : 0;
             }
         }
+    }
+
+    /**
+     * An uploaded transcript file replaces the pasted transcript.
+     *
+     * @param stdClass $data
+     */
+    public function data_postprocessing($data) {
+        parent::data_postprocessing($data);
+        $uploaded = video::draft_transcript((int)($data->transcriptfile ?? 0));
+        if ($uploaded !== null) {
+            $data->transcript = $uploaded;
+        }
+        unset($data->transcriptfile);
     }
 
     /**
@@ -278,12 +336,24 @@ class mod_aiinteractivevideo_mod_form extends moodleform_mod {
         if (empty($data['allowlearn']) && empty($data['allowtest'])) {
             $errors['allowtest'] = get_string('errornomode', 'mod_aiinteractivevideo');
         }
-        if (youtube::video_id((string)($data['videourl'] ?? '')) === null) {
+        if (($data['videosource'] ?? '') === video::SOURCE_UPLOAD) {
+            if (!video::draft_has_file((int)($data['videofile'] ?? 0))) {
+                $errors['videofile'] = get_string('errorvideofile', 'mod_aiinteractivevideo');
+            }
+        } else if (youtube::video_id((string)($data['videourl'] ?? '')) === null) {
             $errors['videourl'] = get_string('erroryoutube', 'mod_aiinteractivevideo');
         }
-        $units = segmenter::units(transcript::parse((string)($data['transcript'] ?? '')));
+        $text = (string)($data['transcript'] ?? '');
+        $uploaded = video::draft_transcript((int)($data['transcriptfile'] ?? 0));
+        if ($uploaded !== null) {
+            $text = $uploaded;
+        }
+        $units = segmenter::units(transcript::parse($text));
         if (count($units) < 2) {
-            $errors['transcript'] = get_string('errortranscript', 'mod_aiinteractivevideo');
+            $errors[$uploaded !== null ? 'transcriptfile' : 'transcript'] = get_string(
+                $uploaded !== null ? 'errortranscriptfile' : 'errortranscript',
+                'mod_aiinteractivevideo'
+            );
         }
         if ($willrebuild && !lmslabs::configured()) {
             $errors['numinteractions'] = get_string('lmslabs_notconfigured', 'mod_aiinteractivevideo');

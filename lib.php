@@ -75,7 +75,16 @@ function mod_aiinteractivevideo_prepare_instance_data(stdClass $data): stdClass 
     if (empty($data->allowlearn) && empty($data->allowtest)) {
         $data->allowlearn = 1;
     }
-    if (isset($data->videourl)) {
+    if (isset($data->videosource)) {
+        $data->videosource = $data->videosource === \mod_aiinteractivevideo\local\video::SOURCE_UPLOAD
+            ? \mod_aiinteractivevideo\local\video::SOURCE_UPLOAD
+            : \mod_aiinteractivevideo\local\video::SOURCE_YOUTUBE;
+    }
+    if (($data->videosource ?? '') === \mod_aiinteractivevideo\local\video::SOURCE_UPLOAD) {
+        // The uploaded file is the video: no YouTube link is kept.
+        $data->videourl = '';
+        $data->videoid = '';
+    } else if (isset($data->videourl)) {
         $data->videourl = trim($data->videourl);
         $data->videoid = (string)\mod_aiinteractivevideo\local\youtube::video_id($data->videourl);
     }
@@ -111,6 +120,30 @@ function mod_aiinteractivevideo_accents(): array {
 }
 
 /**
+ * Saves the uploaded video file from the form, or removes it when the activity uses a YouTube link.
+ *
+ * @param stdClass $data form data
+ * @param context_module $context
+ */
+function mod_aiinteractivevideo_save_video(stdClass $data, context_module $context): void {
+    $video = \mod_aiinteractivevideo\local\video::class;
+    if (($data->videosource ?? '') === $video::SOURCE_UPLOAD) {
+        if (isset($data->videofile)) {
+            file_save_draft_area_files(
+                (int)$data->videofile,
+                $context->id,
+                'mod_aiinteractivevideo',
+                $video::FILEAREA,
+                0,
+                $video::filemanager_options(get_course($data->course))
+            );
+        }
+    } else if (isset($data->videosource)) {
+        get_file_storage()->delete_area_files($context->id, 'mod_aiinteractivevideo', $video::FILEAREA);
+    }
+}
+
+/**
  * Adds a new instance and builds its interactions.
  *
  * @param stdClass $data
@@ -126,6 +159,7 @@ function aiinteractivevideo_add_instance($data, $mform = null) {
     $data->grade = 0;
     $data->id = $DB->insert_record('aiinteractivevideo', $data);
     $context = context_module::instance($data->coursemodule);
+    mod_aiinteractivevideo_save_video($data, $context);
     \mod_aiinteractivevideo\local\manager::build_after_save($data->id, $context, (int)$USER->id);
     $instance = $DB->get_record('aiinteractivevideo', ['id' => $data->id], '*', MUST_EXIST);
     $instance->cmidnumber = $data->cmidnumber ?? '';
@@ -154,14 +188,17 @@ function aiinteractivevideo_update_instance($data, $mform = null) {
     $data->id = $data->instance;
     $data->timemodified = time();
     $old = $DB->get_record('aiinteractivevideo', ['id' => $data->id], '*', MUST_EXIST);
-    if ($old->videoid !== ($data->videoid ?? $old->videoid)) {
+    $context = context_module::instance($data->coursemodule);
+    $before = \mod_aiinteractivevideo\local\video::signature($old, $context);
+    mod_aiinteractivevideo_save_video($data, $context);
+    $after = \mod_aiinteractivevideo\local\video::signature((object)((array)$data + (array)$old), $context);
+    if ($before !== $after) {
         // A different video: the stored length no longer applies.
         $data->videoduration = 0;
     }
     unset($data->grade);
     $DB->update_record('aiinteractivevideo', $data);
     if (!empty($data->rebuild)) {
-        $context = context_module::instance($data->coursemodule);
         \mod_aiinteractivevideo\local\manager::build_after_save($data->id, $context, (int)$USER->id);
     }
     $instance = $DB->get_record('aiinteractivevideo', ['id' => $data->id], '*', MUST_EXIST);
@@ -447,4 +484,54 @@ function aiinteractivevideo_get_view_actions() {
  */
 function aiinteractivevideo_get_post_actions() {
     return ['attempt'];
+}
+
+/**
+ * File areas for the file browser.
+ *
+ * @param stdClass $course
+ * @param stdClass $cm
+ * @param context $context
+ * @return array
+ */
+function aiinteractivevideo_get_file_areas($course, $cm, $context) {
+    return [\mod_aiinteractivevideo\local\video::FILEAREA => get_string('videofile', 'mod_aiinteractivevideo')];
+}
+
+/**
+ * Serves the uploaded video (with range requests, so learners can seek).
+ *
+ * @param stdClass $course
+ * @param stdClass $cm
+ * @param context $context
+ * @param string $filearea
+ * @param array $args
+ * @param bool $forcedownload
+ * @param array $options
+ * @return bool false when the file cannot be served
+ */
+function aiinteractivevideo_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return false;
+    }
+    if ($filearea !== \mod_aiinteractivevideo\local\video::FILEAREA) {
+        return false;
+    }
+    require_course_login($course, true, $cm);
+    require_capability('mod/aiinteractivevideo:view', $context);
+    $itemid = (int)array_shift($args);
+    $filename = array_pop($args);
+    $filepath = $args ? '/' . implode('/', $args) . '/' : '/';
+    $file = get_file_storage()->get_file(
+        $context->id,
+        'mod_aiinteractivevideo',
+        $filearea,
+        $itemid,
+        $filepath,
+        $filename
+    );
+    if (!$file || $file->is_directory()) {
+        return false;
+    }
+    send_stored_file($file, DAYSECS, 0, $forcedownload, $options);
 }

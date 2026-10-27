@@ -1,13 +1,13 @@
 # AI interactive video (mod_aiinteractivevideo)
 
-AI interactive video turns any YouTube video into an interactive lesson in a couple of minutes. The teacher pastes the video link and the transcript, chooses how many interactions they want, and saves. The transcript is divided into sections where the topic changes, and every section ends with a fun, modern activity made from what was said in that section.
+AI interactive video turns any YouTube video, or your own MP4 video, into an interactive lesson in a couple of minutes. The teacher pastes a YouTube link or uploads an MP4 file, adds the transcript (pasted or uploaded as a file), chooses how many interactions they want, and saves. The transcript is divided into sections where the topic changes, and every section ends with a fun, modern activity made from what was said in that section.
 
 While learners watch, the video pauses at the end of each section and the activity appears beside it. A correct answer continues the video. A wrong answer explains what to listen for and replays the section from its start, so learners hear it again before trying again. Each interaction is worth one point in the gradebook.
 
 ## Features
 
 **Learner experience**
-- One soft grey card that fills the page: the YouTube video on the left and the activities on the right. On phones the video sits on top.
+- One soft grey card that fills the page: the video on the left and the activities on the right. On phones the video sits on top.
 - A full screen button that scales the whole card, including the activities, to the screen (with a fallback for iPhone Safari).
 - Premium light design with seven accent colours, animated transitions, confetti, particle bursts, a drawn green tick for correct answers and floating "+1" points.
 - Sound effects generated in the browser (no audio files), which learners can mute and teachers can switch off.
@@ -45,7 +45,7 @@ A point is earned when the interaction is answered correctly first time without 
 
 **Building the interactions from the transcript**
 - *LMS Labs AI*: when the teacher saves, the timed transcript, the number of activities and the allowed types are sent to LMS Labs AI with instructions to follow the real topic changes and to base every activity only on what is said. Any activity that comes back invalid is rebuilt from the same stretch of transcript. Each creation uses 100 LMS Labs AI credits (shown on the form before saving); editing, playback and learner attempts are free. Every generation request carries an idempotency key, so a retry after a timeout never charges twice.
-- Transcript formats: the YouTube "Show transcript" copy (timestamps on their own line or at the start of a line), SRT, WebVTT, bracketed timestamps, or plain text (timing is then spread over the video).
+- Transcript: paste it, or upload your own transcript file (.vtt, .srt or .txt). Formats: the YouTube "Show transcript" copy (timestamps on their own line or at the start of a line), SRT, WebVTT, bracketed timestamps, or plain text (timing is then spread over the video).
 
 **Teacher tools**
 - Interaction builder: a timeline of the sections, every interaction with its content, hint and feedback, Edit and Delete, Add (once the activities have been created), Try again after a failed creation, and Create again with AI.
@@ -63,13 +63,20 @@ A point is earned when the interaction is answered correctly first time without 
 ## Requirements
 - Moodle 4.4 or later.
 - An LMS Labs account. The Site ID and API key are read from LMS Labs Central Config (`local_aiconfig`, *Site administration > Plugins > Local plugins > AI Grader Central Config*) when both are set there; otherwise enter both in *Site administration > Plugins > Activity modules > AI interactive video*. A central and a plugin value are never mixed. The site must be able to reach https://lms-labs.com.
-- Learners' browsers must be able to reach YouTube (www.youtube.com and www.youtube-nocookie.com).
+- For YouTube videos, learners' browsers must be able to reach YouTube (www.youtube.com and www.youtube-nocookie.com). Uploaded MP4 videos are served by Moodle and need no outside access.
 
 ## Installation
 1. Unzip into `mod/aiinteractivevideo`. On Moodle 5.1 and later this is `public/mod/aiinteractivevideo`.
 2. Visit *Site administration > Notifications*.
 3. Make sure LMS Labs Central Config has this site's Site ID and API key (or enter both in the plugin settings). Central Config is selected by default, including on upgrades. In *Site administration > Plugins > Activity modules > AI interactive video*, check access for free and review an explicit one-time **50-credit** unlock from your existing balance. The confirmation is required before any acquisition charge; install, settings views and settings saves never charge. Credentials do not grant the paid entitlement. Existing entitlements remain valid and usage credits are charged separately.
 4. Add an **AI interactive video** activity to a course.
+
+## Video sources
+- **YouTube video link**: paste any YouTube link.
+- **Upload a video file (MP4)**: upload an MP4 (H.264 video, AAC sound) to the activity. It is stored in Moodle, plays in the browser's own player with the same custom controls, travels with course backups, and is limited by the course and site upload size.
+
+## Your own transcript
+Paste the transcript into the activity settings, or upload a transcript file: WebVTT (.vtt), SRT (.srt) or plain text (.txt). UTF-8, UTF-16 and Windows-1252 files are read. An uploaded file replaces the pasted text when the activity is saved. Captions files give exact timings; plain text is spread evenly over the video.
 
 ## Getting the transcript from YouTube
 Open the video on YouTube, select *...more* under the video, then *Show transcript*. Select all the transcript text and paste it into the activity settings. The timestamps are used to place the pauses.
@@ -85,7 +92,7 @@ Open the video on YouTube, select *...more* under the video, then *Show transcri
 
 ## Privacy
 - Attempts and per-interaction results are stored in Moodle and covered by the Privacy API (export and delete).
-- Videos play in the YouTube embedded player in privacy-enhanced mode (youtube-nocookie.com); the learner's browser connects to YouTube directly.
+- YouTube videos play in the YouTube embedded player in privacy-enhanced mode (youtube-nocookie.com); the learner's browser connects to YouTube directly. Uploaded MP4 videos are served from Moodle only.
 - To create the activities, the transcript and activity settings are sent to LMS Labs AI with the site's LMS Labs Site ID. No information about learners or teachers is sent. The API key stays on the server.
 
 ## Security

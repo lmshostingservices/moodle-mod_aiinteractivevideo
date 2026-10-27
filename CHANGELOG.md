@@ -1,9 +1,20 @@
 # Changelog
 
-## 1.0.9 (2026-09-29)
-The one-time 50-credit site unlock is reviewed and confirmed inside normal plugin settings rather than on a separate activation page. Central Config stays selected by default on new and existing installations. A GET or settings save never spends credits; the server entitlement check, release SHA/price validation, pending-request protection and separately billed generation usage remain in force.
-
 All notable changes to AI interactive video (mod_aiinteractivevideo) are documented here.
+
+## [v1.1.0] - 2026-10-27
+
+### Added
+- Upload your own MP4 video instead of using a YouTube link. Choose the video source in the activity settings: YouTube video link (as before) or Upload a video file (MP4). Uploaded videos are stored in Moodle, play with the same custom controls, section markers, no-skipping and resume, and are included in backup and restore.
+- Upload your own transcript file (.vtt, .srt or .txt) instead of pasting a YouTube transcript. The file replaces the pasted text when the activity is saved.
+
+### Changed
+- Existing activities keep using their YouTube link. One new database field (video source), added by the upgrade.
+
+## [v1.0.9] - 2026-09-29
+
+### Changed
+- The one-time 50-credit site unlock is reviewed and confirmed inside normal plugin settings rather than on a separate activation page. Central Config stays selected by default on new and existing installations. A GET or settings save never spends credits; the server entitlement check, release SHA/price validation, pending-request protection and separately billed generation usage remain in force.
 
 ## [v1.0.8] - 2026-09-28
 

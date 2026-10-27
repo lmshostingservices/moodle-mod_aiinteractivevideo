@@ -14,7 +14,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * AI interactive video player: YouTube on the left, interactions on the right, all in one card.
+ * AI interactive video player: the video (YouTube or an uploaded MP4) on the left, interactions on the right, all in one card.
  *
  * The video pauses at the end of each section and the section's interaction appears. A correct answer continues
  * the video; a wrong answer replays the section from its start. Learn mode adds Hint and Show answer. Every
@@ -32,6 +32,7 @@ import {getStrings} from 'core/str';
 import * as Sound from 'mod_aiinteractivevideo/sound';
 import * as Fx from 'mod_aiinteractivevideo/fx';
 import {Video} from 'mod_aiinteractivevideo/youtube';
+import {Video as FileVideo} from 'mod_aiinteractivevideo/filevideo';
 import * as Interactions from 'mod_aiinteractivevideo/interactions';
 
 const COMPONENT = 'mod_aiinteractivevideo';
@@ -397,7 +398,7 @@ class Player {
     }
 
     /**
-     * Creates the YouTube player once.
+     * Creates the video player once: YouTube, or the browser's own player for an uploaded file.
      *
      * @returns {Promise}
      */
@@ -405,11 +406,14 @@ class Player {
         if (this.video) {
             return this.video.promise;
         }
-        this.video = new Video(this.el.video, this.config.videoid, {
+        const handlers = {
             onState: (state) => this.onState(state),
             onReady: () => this.onReady(),
             onError: () => this.toast(S.videoerror, 'warn'),
-        });
+        };
+        this.video = this.config.videosource === 'upload'
+            ? new FileVideo(this.el.video, this.config.videofileurl, handlers)
+            : new Video(this.el.video, this.config.videoid, handlers);
         return this.video.promise.catch((err) => {
             Notification.exception(err);
         });

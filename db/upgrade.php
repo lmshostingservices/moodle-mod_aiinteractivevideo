@@ -27,12 +27,22 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Run database migrations from the installed version to this release.
  *
- * There have been no database schema changes since the initial install.xml.
- * Do not create a savepoint for a version with no migration.
- *
  * @param int $oldversion Installed plugin version.
  * @return bool True on successful upgrade.
  */
 function xmldb_aiinteractivevideo_upgrade($oldversion) {
+    global $DB;
+    $dbman = $DB->get_manager();
+
+    if ($oldversion < 2026102700) {
+        // Where the video comes from: a YouTube link (all existing activities) or an uploaded MP4 file.
+        $table = new xmldb_table('aiinteractivevideo');
+        $field = new xmldb_field('videosource', XMLDB_TYPE_CHAR, '10', null, XMLDB_NOTNULL, null, 'youtube', 'introformat');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        upgrade_mod_savepoint(true, 2026102700, 'aiinteractivevideo');
+    }
+
     return true;
 }

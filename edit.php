@@ -29,6 +29,7 @@ use mod_aiinteractivevideo\local\lmslabs;
 use mod_aiinteractivevideo\local\interaction;
 use mod_aiinteractivevideo\local\manager;
 use mod_aiinteractivevideo\local\transcript;
+use mod_aiinteractivevideo\local\video;
 use mod_aiinteractivevideo\local\youtube;
 
 $id = required_param('id', PARAM_INT);
@@ -105,7 +106,8 @@ $error = $failed ? manager::generation_error($instance->id) : null;
 $templatedata = [
     'cmid' => $cm->id,
     'name' => format_string($instance->name, true, ['context' => $context, 'escape' => false]),
-    'thumbnail' => $instance->videoid ? youtube::thumbnail($instance->videoid) : '',
+    'thumbnail' => video::source($instance) === video::SOURCE_YOUTUBE && $instance->videoid
+        ? youtube::thumbnail($instance->videoid) : '',
     'count' => count($sections),
     'duration' => transcript::clock($duration),
     'transcriptlines' => count($cues),
