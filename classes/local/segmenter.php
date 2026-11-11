@@ -137,8 +137,10 @@ class segmenter {
             }
             $depth[$i] = ($lpeak - $gap[$i]) + ($rpeak - $gap[$i]);
             // Sentence starts that announce a new topic get a small boost.
-            if (preg_match('/^(so,? )?(next|now|let\'?s|moving on|another|the (next|second|third|final|last)|' .
-                    'first(ly)?|second(ly)?|third(ly)?|finally|in summary|to summari[sz]e)\b/i', $units[$i]['text'])) {
+            if (
+                preg_match('/^(so,? )?(next|now|let\'?s|moving on|another|the (next|second|third|final|last)|' .
+                    'first(ly)?|second(ly)?|third(ly)?|finally|in summary|to summari[sz]e)\b/i', $units[$i]['text'])
+            ) {
                 $depth[$i] += 0.15;
             }
         }

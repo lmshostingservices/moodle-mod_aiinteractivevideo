@@ -131,6 +131,10 @@ class Player {
         this.maxwatched = 0;
         this.active = 0;
         this.unsaved = 0;
+        this.watchSegs = [];
+        this.watchSeg = null;
+        this.lastTick = null;
+        this.watchRetry = '';
         this.speeds = [1, 1.25, 1.5, 1.75, 0.75];
         Sound.setAllowed(!!config.sounds);
         this.syncMute();
@@ -502,15 +506,57 @@ class Player {
             return;
         }
         const elapsed = this.unsaved;
+        const watched = this.takeWatched();
         this.unsaved = 0;
         call('save_progress', {
             attemptid: this.data.attemptid,
             position: Math.round(this.video.time() * 100) / 100,
             elapsed,
             duration: Math.round(this.duration || 0),
+            watched,
         }).catch(() => {
             this.unsaved += elapsed;
+            this.watchRetry = [this.watchRetry, watched].filter(Boolean).join(',');
         });
+    }
+
+    /**
+     * Records the stretch of video played since the last tick (normal playback only, never jumps).
+     *
+     * @param {number} t current position
+     * @param {boolean} playing
+     */
+    trackWatched(t, playing) {
+        const last = this.lastTick;
+        this.lastTick = t;
+        if (!playing || last === null || t - last <= 0 || t - last > 1.5) {
+            return;
+        }
+        if (this.watchSeg && Math.abs(this.watchSeg.e - last) < 0.05) {
+            this.watchSeg.e = t;
+        } else {
+            this.watchSeg = {s: last, e: t};
+            this.watchSegs.push(this.watchSeg);
+        }
+    }
+
+    /**
+     * Takes the watched stretches not yet sent, as whole-second ranges ("12-27,40-55").
+     *
+     * @returns {string}
+     */
+    takeWatched() {
+        const parts = this.watchSegs
+            .map((g) => [Math.round(g.s), Math.round(g.e)])
+            .filter((g) => g[1] > g[0])
+            .map((g) => `${g[0]}-${g[1]}`);
+        if (this.watchRetry) {
+            parts.unshift(this.watchRetry);
+        }
+        this.watchSegs = [];
+        this.watchSeg = null;
+        this.watchRetry = '';
+        return parts.join(',');
     }
 
     /**
@@ -525,6 +571,7 @@ class Player {
         }
         const t = this.video.time();
         const playing = this.video.playing();
+        this.trackWatched(t, playing);
         this.drawProgress(t);
         if (this.open) {
             return;
@@ -1221,9 +1268,15 @@ class Player {
         window.clearInterval(this.tickHandle);
         window.clearInterval(this.secondHandle);
         let summary;
+        const watched = this.takeWatched();
         try {
-            summary = await call('finish_attempt', {attemptid: this.data.attemptid, elapsed: this.unsaved});
+            summary = await call('finish_attempt', {
+                attemptid: this.data.attemptid,
+                elapsed: this.unsaved,
+                watched,
+            });
         } catch (err) {
+            this.watchRetry = watched;
             this.finishing = false;
             Notification.exception(err);
             return;

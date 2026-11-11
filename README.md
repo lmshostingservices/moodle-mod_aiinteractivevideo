@@ -51,8 +51,12 @@ A point is earned when the interaction is answered correctly first time without 
 - Interaction builder: a timeline of the sections, every interaction with its content, hint and feedback, Edit and Delete, Add (once the activities have been created), Try again after a failed creation, and Create again with AI.
 - Edit any interaction in a simple text format (for example `* ` marks correct cards, `[[word]]` marks a gap, `{{wrong|right}}` marks a mistake).
 - Reports:
+  - *Video engagement*: how many learners watched the whole video, the average share of the video watched, how many did every interaction and how many have not started. Watched time counts each second of the video once: replays don't add to it and skipping ahead doesn't count.
+  - *Questions the class got wrong most*: the top three interactions by learners who got them wrong, with their names.
+  - *Learners*: one row per learner who can take the activity (including those who have not started): status, video watched (% and time), interactions done, a coloured result for every interaction, which ones they got wrong, best score and active time. Download as CSV, Excel or ODS with one column per interaction.
   - *Overview*: learners, attempts, average score and time; for each interaction the share right first time, average tries, average time, replays, hints and answers shown, with flags for "Too hard", "Takes too long" and "Often rewatched".
-  - *Attempts*: every attempt with points, active time, replays and hints; drill down into one attempt; delete attempts (grades and completion are recalculated), recalculate grades, and download as CSV, Excel or ODS.
+  - *Attempts*: every attempt with points, video watched, interactions done, active time, replays and hints; drill down into one attempt; delete attempts (grades and completion are recalculated), recalculate grades, and download as CSV, Excel or ODS.
+  - The Overview (per interaction, with who got each one wrong), Learners and Attempts tables all download as CSV, Excel or ODS.
   - Group filter and Learn/Test switch.
 
 **Moodle integration**

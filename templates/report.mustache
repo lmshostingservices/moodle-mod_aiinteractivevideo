@@ -24,7 +24,11 @@
         "tabs": [{"label": "Overview", "url": "#", "active": true}],
         "modetabs": [],
         "groupselector": "",
-        "insights": true, "attemptslist": false, "attemptview": false,
+        "insights": true, "learnerslist": false, "attemptslist": false, "attemptview": false,
+        "engagement": [{"label": "Watched the whole video", "value": 6, "of": 8, "pct": 75, "kind": "video"}],
+        "hasmissed": true, "download": "",
+        "missed": [{"rank": 1, "number": 4, "title": "Spot the hazard", "typekey": "spotmistake", "typename": "Spot the mistake",
+            "summary": "6 of 8 learners got this wrong", "pct": 75, "names": "Ava Chen, Liam Ng"}],
         "kpis": [{"label": "Learners", "value": 3, "icon": {"ic": {"book": true} } }],
         "hardest": "The experiment · 40%",
         "hasrows": true, "learnmode": false,
@@ -56,7 +60,37 @@
         {{/kpis}}
     </div>
 
+    {{^attemptview}}
+    <div class="aiv-eng">
+        {{#engagement}}
+        <div class="aiv-eng-card aiv-eng-{{kind}}">
+            <span class="aiv-eng-label">{{label}}</span>
+            <span class="aiv-eng-value"><strong>{{value}}</strong>{{#of}}<span class="aiv-eng-of"> / {{of}}</span>{{/of}}</span>
+            <span class="aiv-eng-meter"><span style="width: {{pct}}%;"></span></span>
+        </div>
+        {{/engagement}}
+    </div>
+    {{/attemptview}}
+
     {{#insights}}
+    {{#hasmissed}}
+    <div class="aiv-rep-card aiv-missed">
+        <h3 class="aiv-missed-h">{{#str}} mostmissed, mod_aiinteractivevideo {{/str}}</h3>
+        <ol class="aiv-missed-list">
+            {{#missed}}
+            <li class="aiv-missed-item">
+                <span class="aiv-missed-rank">{{rank}}</span>
+                <div class="aiv-missed-body">
+                    <strong>{{#str}} qnumber, mod_aiinteractivevideo, {{number}} {{/str}} · {{title}}</strong>
+                    <span class="aiv-rep-sub"><span class="aiv-typechip aiv-type-{{typekey}}">{{typename}}</span> {{summary}}</span>
+                    {{#names}}<span class="aiv-missed-names">{{names}}</span>{{/names}}
+                </div>
+                <span class="aiv-missed-pct">{{pct}}%</span>
+            </li>
+            {{/missed}}
+        </ol>
+    </div>
+    {{/hasmissed}}
     {{#hardest}}
     <div class="aiv-rep-callout">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
@@ -64,6 +98,7 @@
     </div>
     {{/hardest}}
     <div class="aiv-rep-card">
+        {{#download}}<div class="aiv-rep-toolbar"><div class="aiv-rep-download">{{{download}}}</div></div>{{/download}}
         <table class="aiv-rep-table">
             <thead>
                 <tr>
@@ -102,6 +137,58 @@
     </div>
     {{/insights}}
 
+    {{#learnerslist}}
+    <div class="aiv-rep-card">
+        <div class="aiv-rep-toolbar">
+            <span class="aiv-muted aiv-rep-note">{{#str}} learnersnote, mod_aiinteractivevideo {{/str}}</span>
+            <div class="aiv-rep-download">{{{download}}}</div>
+        </div>
+        {{#haslearners}}
+        <table class="aiv-rep-table aiv-learners">
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}} learner, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} status, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} videowatched, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} interactionsdone, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} results, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} gotwrong, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} bestscorecol, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} activetime, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#learnerrows}}
+                <tr class="aiv-lr-{{statuskey}}">
+                    <td><strong>{{fullname}}</strong><span class="aiv-rep-sub aiv-block">{{lastactive}}</span></td>
+                    <td><span class="aiv-lstate aiv-lstate-{{statuskey}}">{{status}}</span></td>
+                    <td>
+                        {{#started}}<span class="aiv-bar-wrap"><span class="aiv-bar aiv-watch-{{watchlevel}}"><span class="aiv-bar-fill" style="width: {{watchedpct}}%;"></span></span><span class="aiv-bar-label">{{watchedpct}}%</span>{{#wholevideo}}<span class="aiv-tick" title="{{#str}} wholevideo, mod_aiinteractivevideo {{/str}}">✓</span>{{/wholevideo}}</span>
+                        <span class="aiv-rep-sub aiv-block">{{watchedtime}}</span>{{/started}}
+                        {{^started}}<span class="aiv-muted">–</span>{{/started}}
+                    </td>
+                    <td class="aiv-num">{{#started}}{{done}}{{#alldone}} <span class="aiv-tick">✓</span>{{/alldone}}{{/started}}{{^started}}<span class="aiv-muted">–</span>{{/started}}</td>
+                    <td><span class="aiv-cells">{{#cells}}<span class="aiv-cell aiv-cell-{{kind}}" title="{{n}}. {{title}}: {{label}}">{{n}}</span>{{/cells}}</span></td>
+                    <td class="aiv-wrong">{{wrong}}</td>
+                    <td class="aiv-num">{{best}}</td>
+                    <td class="aiv-num">{{#started}}{{time}}{{/started}}</td>
+                    <td>{{#viewurl}}<a class="aiv-btn aiv-btn-ghost aiv-btn-sm" href="{{viewurl}}">{{#str}} review, mod_aiinteractivevideo {{/str}}</a>{{/viewurl}}</td>
+                </tr>
+                {{/learnerrows}}
+            </tbody>
+        </table>
+        <div class="aiv-legend">
+            <span><span class="aiv-cell aiv-cell-first">1</span> {{#str}} result_first, mod_aiinteractivevideo {{/str}}</span>
+            <span><span class="aiv-cell aiv-cell-later">2</span> {{#str}} result_laterkey, mod_aiinteractivevideo {{/str}}</span>
+            <span><span class="aiv-cell aiv-cell-wrong">3</span> {{#str}} result_wrong, mod_aiinteractivevideo {{/str}}</span>
+            <span><span class="aiv-cell aiv-cell-none">4</span> {{#str}} status_notanswered, mod_aiinteractivevideo {{/str}}</span>
+        </div>
+        {{/haslearners}}
+        {{^haslearners}}<p class="aiv-muted aiv-rep-empty">{{#str}} nolearners, mod_aiinteractivevideo {{/str}}</p>{{/haslearners}}
+    </div>
+    {{/learnerslist}}
+
     {{#attemptslist}}
     <div class="aiv-rep-card">
         <div class="aiv-rep-toolbar">
@@ -123,6 +210,8 @@
                     <th scope="col">{{#str}} attempt, mod_aiinteractivevideo {{/str}}</th>
                     <th scope="col">{{#str}} status, mod_aiinteractivevideo {{/str}}</th>
                     <th scope="col">{{#str}} points, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} videowatched, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} interactionsdone, mod_aiinteractivevideo {{/str}}</th>
                     <th scope="col">{{#str}} activetime, mod_aiinteractivevideo {{/str}}</th>
                     <th scope="col">{{#str}} rewatches, mod_aiinteractivevideo {{/str}}</th>
                     <th scope="col">{{#str}} hints, mod_aiinteractivevideo {{/str}}</th>
@@ -138,6 +227,8 @@
                     <td class="aiv-num">{{attempt}}</td>
                     <td><span class="aiv-state {{#finished}}is-finished{{/finished}}">{{state}}</span></td>
                     <td><span class="aiv-bar-wrap"><span class="aiv-bar aiv-bar-{{level}}"><span class="aiv-bar-fill" style="width: {{percent}}%;"></span></span><span class="aiv-bar-label">{{score}}</span></span></td>
+                    <td class="aiv-num">{{watchedpct}}%</td>
+                    <td class="aiv-num">{{done}}</td>
                     <td class="aiv-num">{{time}}</td>
                     <td class="aiv-num">{{rewatches}}</td>
                     <td class="aiv-num">{{hints}}</td>
@@ -157,7 +248,7 @@
     <div class="aiv-rep-card">
         <div class="aiv-rep-toolbar">
             <a class="aiv-btn aiv-btn-ghost aiv-btn-sm" href="{{backurl}}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg><span>{{#str}} back {{/str}}</span></a>
-            <strong>{{detailname}}</strong><span class="aiv-muted">{{detailscore}}</span>
+            <strong>{{detailname}}</strong><span class="aiv-muted">{{detailscore}}</span><span class="aiv-muted">{{detailwatched}}</span>
         </div>
         <table class="aiv-rep-table">
             <thead>
@@ -165,7 +256,7 @@
                     <th scope="col">{{#str}} interaction, mod_aiinteractivevideo {{/str}}</th>
                     <th scope="col">{{#str}} status, mod_aiinteractivevideo {{/str}}</th>
                     <th scope="col">{{#str}} points, mod_aiinteractivevideo {{/str}}</th>
-                    <th scope="col">{{#str}} averagetries, mod_aiinteractivevideo {{/str}}</th>
+                    <th scope="col">{{#str}} tries, mod_aiinteractivevideo {{/str}}</th>
                     <th scope="col">{{#str}} timespent, mod_aiinteractivevideo {{/str}}</th>
                     <th scope="col">{{#str}} hints, mod_aiinteractivevideo {{/str}}</th>
                     <th scope="col">{{#str}} rewatches, mod_aiinteractivevideo {{/str}}</th>
@@ -175,7 +266,7 @@
                 {{#detail}}
                 <tr>
                     <td><div class="aiv-rep-name"><span class="aiv-rep-n">{{number}}</span><div><strong>{{title}}</strong><span class="aiv-rep-sub"><span class="aiv-typechip aiv-type-{{typekey}}">{{typename}}</span></span></div></div></td>
-                    <td><span class="aiv-state {{#ok}}is-finished{{/ok}}">{{status}}</span></td>
+                    <td><span class="aiv-cell aiv-cell-{{result}} aiv-cell-dot"></span> <span class="aiv-state {{#ok}}is-finished{{/ok}}">{{status}}</span></td>
                     <td class="aiv-num">{{points}}</td>
                     <td class="aiv-num">{{tries}}</td>
                     <td class="aiv-num">{{time}}</td>

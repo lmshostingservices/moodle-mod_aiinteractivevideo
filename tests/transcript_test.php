@@ -100,7 +100,8 @@ final class transcript_test extends \basic_testcase {
      */
     public function test_video_id(): void {
         $id = 'ruM4Xxhx32U';
-        foreach ([
+        foreach (
+            [
             "https://www.youtube.com/watch?v=$id",
             "https://youtube.com/watch?v=$id&t=30s",
             "https://youtu.be/$id?si=abc",
@@ -110,7 +111,8 @@ final class transcript_test extends \basic_testcase {
             "https://m.youtube.com/watch?v=$id",
             "youtube.com/live/$id",
             $id,
-        ] as $url) {
+            ] as $url
+        ) {
             $this->assertEquals($id, youtube::video_id($url), $url);
         }
         $this->assertNull(youtube::video_id('https://vimeo.com/12345'));

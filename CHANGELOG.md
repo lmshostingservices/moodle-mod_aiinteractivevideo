@@ -2,6 +2,22 @@
 
 All notable changes to AI interactive video (mod_aiinteractivevideo) are documented here.
 
+## [v1.2.0] - 2026-11-11
+
+### Added
+- Video engagement tracking: the player records which seconds of the video each learner really plays. Replays and rewinds count once, and skipping ahead never counts as watching. Older attempts are counted up to the furthest point they reached.
+- Reports > Overview: Watched the whole video, Average video watched, Did every interaction and Not started cards, and "Questions the class got wrong most" (top three, with the learners' names).
+- Reports > Learners: one row per learner, including learners who have not started, with status, video watched, interactions done, a result for every interaction (correct first try, correct after a wrong try, wrong, not answered), what they got wrong, best score and active time.
+- Downloads (CSV, Excel, ODS) for the Overview and Learners tabs. The Learners download has one column per interaction. The Attempts download adds Video watched and Interactions done.
+
+### Fixed
+- The attempt review now shows "Correct first try" and "Correct after N tries" instead of "Correct after a replay" for every correct answer.
+- The Attempts download shows Test/Learn and Finished/In progress instead of internal codes.
+
+### Changed
+- Two new attempt fields (watched ranges, watched seconds), added by the upgrade. Privacy export and backup include them.
+- Code style updated to the current Moodle coding standard.
+
 ## [v1.1.0] - 2026-10-27
 
 ### Added

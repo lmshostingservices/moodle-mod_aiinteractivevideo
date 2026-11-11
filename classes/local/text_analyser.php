@@ -221,8 +221,10 @@ class text_analyser {
         $phrases = [];
         $words = self::words($all);
         for ($i = 0; $i < count($words) - 1; $i++) {
-            if (self::is_content_word($words[$i]) && self::is_content_word($words[$i + 1]) &&
-                    !self::is_adverb($words[$i]) && !self::is_adverb($words[$i + 1])) {
+            if (
+                self::is_content_word($words[$i]) && self::is_content_word($words[$i + 1]) &&
+                    !self::is_adverb($words[$i]) && !self::is_adverb($words[$i + 1])
+            ) {
                 $pair = $words[$i] . ' ' . $words[$i + 1];
                 $phrases[$pair] = ($phrases[$pair] ?? 0) + 1;
             }

@@ -47,7 +47,7 @@ class backup_aiinteractivevideo_activity_structure_step extends backup_activity_
         $attempts = new backup_nested_element('attempts');
         $attempt = new backup_nested_element('attempt', ['id'], [
             'userid', 'attempt', 'mode', 'state', 'salt', 'score', 'maxscore', 'position', 'maxwatched', 'activetime',
-            'timestart', 'timefinish', 'timemodified',
+            'watchedranges', 'watchedsecs', 'timestart', 'timefinish', 'timemodified',
         ]);
         $responses = new backup_nested_element('responses');
         $response = new backup_nested_element('response', ['id'], [

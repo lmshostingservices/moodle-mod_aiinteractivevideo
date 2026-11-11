@@ -27,10 +27,12 @@ final class unlock {
     /** @var callable|null Injected transport for isolated tests: fn(request): [httpstatus, rawbody]. */
     public static $transport = null;
 
-    /** @var string Component and API identities. */
-    const COMPONENT = 'mod_aiinteractivevideo';
-    const SHORTID = 'aiinteractivevideo';
-    const BASE = 'https://lms-labs.com';
+    /** @var string Frankenstyle component. */
+    public const COMPONENT = 'mod_aiinteractivevideo';
+    /** @var string LMS Labs plugin id. */
+    public const SHORTID = 'aiinteractivevideo';
+    /** @var string LMS Labs base URL. */
+    public const BASE = 'https://lms-labs.com';
 
     /**
      * Request without redirects or logging payloads. A malformed response is never interpreted as a purchase.
@@ -80,6 +82,8 @@ final class unlock {
     }
 
     /**
+     * Returns a whole number, or null when the value is not one.
+     *
      * @param mixed $value Numeric field.
      * @param bool $allowzero Allow zero.
      * @return int|null Valid integer.
@@ -103,6 +107,8 @@ final class unlock {
     }
 
     /**
+     * The unresolved purchase marker, if any.
+     *
      * @return array|null Unresolved purchase marker.
      */
     public static function pending(): ?array {
@@ -176,9 +182,11 @@ final class unlock {
         }
         $price = self::whole($entry['creditsRequired'] ?? null);
         $sha = $entry['sha256'] ?? '';
-        if (($entry['status'] ?? null) !== 'ready' || ($entry['zipExists'] ?? null) !== true ||
+        if (
+            ($entry['status'] ?? null) !== 'ready' || ($entry['zipExists'] ?? null) !== true ||
                 ($entry['acquisitionMode'] ?? null) !== 'credit-unlock' || $price !== 50 ||
-                !is_string($sha) || !preg_match('/^[a-f0-9]{64}$/D', $sha)) {
+                !is_string($sha) || !preg_match('/^[a-f0-9]{64}$/D', $sha)
+        ) {
             return ['ok' => false, 'reason' => 'Release, ZIP, price or SHA not confirmed'];
         }
         return ['ok' => true, 'price' => $price, 'sha' => $sha,
@@ -193,7 +201,11 @@ final class unlock {
     public static function review(): array {
         // Do not let a review automatically resolve pending state: recovery requires an explicit Check access.
         if (self::pending()) {
-            return ['state' => self::state(), 'release' => self::release(), 'blocked' => 'Check access to resolve the pending request'];
+            return [
+                'state' => self::state(),
+                'release' => self::release(),
+                'blocked' => 'Check access to resolve the pending request',
+            ];
         }
         $state = self::verify();
         $release = self::release();
@@ -252,8 +264,13 @@ final class unlock {
             return ['outcome' => 'Release or price changed. Review and confirm again'];
         }
         // The Moodle config write must complete before dispatch. Failure must never send a purchase.
-        if (!set_config('unlockpending', json_encode(['time' => time(), 'price' => $expected, 'sha' => $sha]),
-                self::COMPONENT)) {
+        if (
+            !set_config(
+                'unlockpending',
+                json_encode(['time' => time(), 'price' => $expected, 'sha' => $sha]),
+                self::COMPONENT
+            )
+        ) {
             return ['outcome' => 'Unable to save pending request'];
         }
         [$status, $data] = self::request('POST', '/api/plugin-unlock', [
@@ -261,8 +278,10 @@ final class unlock {
             'releaseSha256' => $sha, 'expectedCredits' => $expected,
             'siteId' => $creds['siteid'], 'apiKey' => $creds['apikey'],
         ]);
-        if ($status >= 200 && $status < 300 && is_bool($data['success'] ?? null) && $data['success'] === true &&
-                (!array_key_exists('alreadyUnlocked', $data) || is_bool($data['alreadyUnlocked']))) {
+        if (
+            $status >= 200 && $status < 300 && is_bool($data['success'] ?? null) && $data['success'] === true &&
+                (!array_key_exists('alreadyUnlocked', $data) || is_bool($data['alreadyUnlocked']))
+        ) {
             unset_config('unlockpending', self::COMPONENT);
             $balance = self::balance($data['remainingCredits'] ?? null);
             $source = self::safe($data['entitlementSource'] ?? '', 60);
@@ -276,8 +295,10 @@ final class unlock {
         }
         // A known refusal is definitive; network errors, malformed 2xx, timeouts and 5xx are NOT.
         $code = strtolower(self::safe($data['code'] ?? $data['error'] ?? '', 60));
-        if ($status === 402 || ($status >= 400 && $status < 500 && $status !== 408 && $status !== 429) ||
-                ($status >= 200 && $status < 300 && ($data['success'] ?? null) === false && $code !== '')) {
+        if (
+            $status === 402 || ($status >= 400 && $status < 500 && $status !== 408 && $status !== 429) ||
+                ($status >= 200 && $status < 300 && ($data['success'] ?? null) === false && $code !== '')
+        ) {
             unset_config('unlockpending', self::COMPONENT);
             return ['outcome' => 'refused', 'reason' => $status === 402 ? 'Insufficient credits'
                 : 'HTTP ' . $status . ' ' . $code,
@@ -287,6 +308,8 @@ final class unlock {
     }
 
     /**
+     * Cleans remote text for display.
+     *
      * @param mixed $value Remote text.
      * @param int $length Maximum characters.
      * @return string Escapable plain text.

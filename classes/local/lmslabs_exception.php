@@ -72,7 +72,10 @@ class lmslabs_exception extends \moodle_exception {
      * @param string $buyurl purchase link
      */
     public function __construct(
-        string $reason, string $message = '', string $debug = '', ?int $credits = null,
+        string $reason,
+        string $message = '',
+        string $debug = '',
+        ?int $credits = null,
         string $buyurl = ''
     ) {
         $this->reason = $reason;

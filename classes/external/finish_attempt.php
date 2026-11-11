@@ -39,6 +39,7 @@ class finish_attempt extends external_api {
         return new external_function_parameters([
             'attemptid' => new external_value(PARAM_INT, 'Attempt id'),
             'elapsed' => new external_value(PARAM_INT, 'Active seconds since the last save', VALUE_DEFAULT, 0),
+            'watched' => new external_value(PARAM_NOTAGS, 'Seconds played since the last save', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -47,12 +48,16 @@ class finish_attempt extends external_api {
      *
      * @param int $attemptid
      * @param int $elapsed
+     * @param string $watched
      * @return array
      */
-    public static function execute(int $attemptid, int $elapsed = 0): array {
-        $params = self::validate_parameters(self::execute_parameters(), ['attemptid' => $attemptid, 'elapsed' => $elapsed]);
+    public static function execute(int $attemptid, int $elapsed = 0, string $watched = ''): array {
+        $params = self::validate_parameters(
+            self::execute_parameters(),
+            ['attemptid' => $attemptid, 'elapsed' => $elapsed, 'watched' => $watched]
+        );
         [$attempt, $instance, $cm, $course, $context] = helper::attempt($params['attemptid'], false);
-        return manager::finish($attempt, $instance, $cm, $course, $context, $params['elapsed']);
+        return manager::finish($attempt, $instance, $cm, $course, $context, $params['elapsed'], $params['watched']);
     }
 
     /**

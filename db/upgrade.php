@@ -22,8 +22,6 @@
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Run database migrations from the installed version to this release.
  *
@@ -42,6 +40,30 @@ function xmldb_aiinteractivevideo_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
         upgrade_mod_savepoint(true, 2026102700, 'aiinteractivevideo');
+    }
+
+    if ($oldversion < 2026111100) {
+        // Video engagement: which seconds of the video each attempt really played.
+        $table = new xmldb_table('aiinteractivevideo_attempt');
+        $field = new xmldb_field('watchedranges', XMLDB_TYPE_TEXT, null, null, null, null, null, 'activetime');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        $field = new xmldb_field('watchedsecs', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'watchedranges');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+        // Older attempts only know the furthest point reached: count everything up to it as watched.
+        $rs = $DB->get_recordset_select('aiinteractivevideo_attempt', 'maxwatched > 0', null, '', 'id, maxwatched');
+        foreach ($rs as $a) {
+            $end = (int)floor((float)$a->maxwatched);
+            if ($end > 0) {
+                $DB->update_record('aiinteractivevideo_attempt', (object)['id' => $a->id,
+                    'watchedranges' => '0-' . $end, 'watchedsecs' => $end]);
+            }
+        }
+        $rs->close();
+        upgrade_mod_savepoint(true, 2026111100, 'aiinteractivevideo');
     }
 
     return true;

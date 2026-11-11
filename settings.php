@@ -36,8 +36,11 @@ if ($ADMIN->fulltree) {
         'type' => 'submit', 'name' => 'action', 'value' => 'check',
         'formaction' => $actionurl->out(false), 'formmethod' => 'post', 'class' => 'btn btn-secondary btn-sm',
     ]);
-    $access .= ' ' . html_writer::link(new moodle_url($settingsurl, ['unlockreview' => 1]),
-        get_string('act_review', 'mod_aiinteractivevideo'), ['class' => 'btn btn-secondary btn-sm']);
+    $access .= ' ' . html_writer::link(
+        new moodle_url($settingsurl, ['unlockreview' => 1]),
+        get_string('act_review', 'mod_aiinteractivevideo'),
+        ['class' => 'btn btn-secondary btn-sm']
+    );
     if (optional_param('unlockreview', 0, PARAM_BOOL)) {
         $review = \mod_aiinteractivevideo\local\unlock::review();
         if ($review['blocked'] === '' && ($review['release']['price'] ?? null) === 50) {
@@ -56,19 +59,25 @@ if ($ADMIN->fulltree) {
                 'formaction' => $actionurl->out(false), 'formmethod' => 'post', 'class' => 'btn btn-primary',
             ]);
         } else {
-            $access .= html_writer::div(s($review['blocked'] ?: 'The 50-credit price is unavailable.'),
-                'alert alert-warning');
+            $access .= html_writer::div(
+                s($review['blocked'] ?: 'The 50-credit price is unavailable.'),
+                'alert alert-warning'
+            );
         }
     }
     $settings->add(new admin_setting_heading(
         'mod_aiinteractivevideo/lmslabsheading',
         get_string('lmslabs', 'mod_aiinteractivevideo'),
         get_string('lmslabs_settings_desc', 'mod_aiinteractivevideo', \mod_aiinteractivevideo\local\lmslabs::COST) .
-            html_writer::div(s($status) . ' ' .
+            html_writer::div(
+                s($status) . ' ' .
                 (\mod_aiinteractivevideo\local\credentials::central_installed()
-                    ? html_writer::link(new moodle_url('/admin/settings.php', ['section' => 'local_aiconfig']),
-                        get_string('act_central', 'mod_aiinteractivevideo')) : ''),
-                $source ? 'alert alert-info' : 'alert alert-warning') .
+                    ? html_writer::link(
+                        new moodle_url('/admin/settings.php', ['section' => 'local_aiconfig']),
+                        get_string('act_central', 'mod_aiinteractivevideo')
+                    ) : ''),
+                $source ? 'alert alert-info' : 'alert alert-warning'
+            ) .
             $access
     ));
     $settings->add(new admin_setting_configtext(

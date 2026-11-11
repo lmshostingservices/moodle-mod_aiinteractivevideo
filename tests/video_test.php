@@ -241,7 +241,10 @@ final class video_test extends \advanced_testcase {
         $this->assertEquals(2.0, $cues[0]['start']);
 
         $cp1252 = "Caf\xE9 is French for coffee. It is served hot.";
-        $this->assertEquals('Café is French for coffee. It is served hot.', video::draft_transcript($this->draft('t.txt', $cp1252)));
+        $this->assertEquals(
+            'Café is French for coffee. It is served hot.',
+            video::draft_transcript($this->draft('t.txt', $cp1252))
+        );
     }
 
     /**

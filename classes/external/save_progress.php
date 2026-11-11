@@ -41,6 +41,7 @@ class save_progress extends external_api {
             'position' => new external_value(PARAM_FLOAT, 'Video position in seconds'),
             'elapsed' => new external_value(PARAM_INT, 'Active seconds since the last save', VALUE_DEFAULT, 0),
             'duration' => new external_value(PARAM_INT, 'Video length reported by the player', VALUE_DEFAULT, 0),
+            'watched' => new external_value(PARAM_NOTAGS, 'Seconds played since the last save', VALUE_DEFAULT, ''),
         ]);
     }
 
@@ -51,15 +52,30 @@ class save_progress extends external_api {
      * @param float $position
      * @param int $elapsed
      * @param int $duration
+     * @param string $watched
      * @return array
      */
-    public static function execute(int $attemptid, float $position, int $elapsed = 0, int $duration = 0): array {
+    public static function execute(
+        int $attemptid,
+        float $position,
+        int $elapsed = 0,
+        int $duration = 0,
+        string $watched = ''
+    ): array {
         $params = self::validate_parameters(
             self::execute_parameters(),
-            ['attemptid' => $attemptid, 'position' => $position, 'elapsed' => $elapsed, 'duration' => $duration]
+            ['attemptid' => $attemptid, 'position' => $position, 'elapsed' => $elapsed, 'duration' => $duration,
+                'watched' => $watched]
         );
         [$attempt, $instance] = helper::attempt($params['attemptid']);
-        manager::progress($attempt, $instance, $params['position'], $params['elapsed'], $params['duration']);
+        manager::progress(
+            $attempt,
+            $instance,
+            $params['position'],
+            $params['elapsed'],
+            $params['duration'],
+            $params['watched']
+        );
         return ['status' => true];
     }
 

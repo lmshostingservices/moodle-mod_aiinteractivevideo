@@ -53,6 +53,8 @@ class provider implements
             'position' => 'privacy:metadata:attempt:position',
             'maxwatched' => 'privacy:metadata:attempt:maxwatched',
             'activetime' => 'privacy:metadata:attempt:activetime',
+            'watchedranges' => 'privacy:metadata:attempt:watchedranges',
+            'watchedsecs' => 'privacy:metadata:attempt:watchedsecs',
             'timestart' => 'privacy:metadata:attempt:timestart',
             'timefinish' => 'privacy:metadata:attempt:timefinish',
         ], 'privacy:metadata:attempt');
@@ -172,6 +174,8 @@ class provider implements
                     'maxscore' => (int)$a->maxscore,
                     'position' => (float)$a->position,
                     'activetime' => (int)$a->activetime,
+                    'watchedseconds' => (int)$a->watchedsecs,
+                    'watchedranges' => (string)$a->watchedranges,
                     'timestart' => transform::datetime($a->timestart),
                     'timefinish' => $a->timefinish ? transform::datetime($a->timefinish) : '-',
                     'interactions' => $rows,

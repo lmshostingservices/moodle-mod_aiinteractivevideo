@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_aiinteractivevideo';
-$plugin->version   = 2026102700;
-$plugin->release   = '1.1.0';
+$plugin->version   = 2026111100;
+$plugin->release   = '1.2.0';
 $plugin->requires  = 2024042200; // Moodle 4.4.
 $plugin->maturity  = MATURITY_STABLE;

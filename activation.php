@@ -41,9 +41,13 @@ require_sesskey();
 
 if ($action === 'check') {
     $state = unlock::verify();
-    redirect($url, get_string('act_checked', 'mod_aiinteractivevideo', $state['status']), null,
+    redirect(
+        $url,
+        get_string('act_checked', 'mod_aiinteractivevideo', $state['status']),
+        null,
         $state['status'] === 'unknown' ? \core\output\notification::NOTIFY_WARNING
-            : \core\output\notification::NOTIFY_SUCCESS);
+        : \core\output\notification::NOTIFY_SUCCESS
+    );
 }
 if ($action === 'unlock') {
     if (required_param('confirm', PARAM_BOOL) !== 1) {
@@ -61,8 +65,11 @@ if ($action === 'unlock') {
         }
         $type = \core\output\notification::NOTIFY_SUCCESS;
     } else {
-        $message = get_string('act_result_failed', 'mod_aiinteractivevideo',
-            $result['reason'] ?? $outcome);
+        $message = get_string(
+            'act_result_failed',
+            'mod_aiinteractivevideo',
+            $result['reason'] ?? $outcome
+        );
         if (isset($result['balance'])) {
             $message .= ' ' . get_string('act_balance', 'mod_aiinteractivevideo', $result['balance']);
         }
@@ -76,11 +83,15 @@ echo $OUTPUT->heading(get_string('act_title', 'mod_aiinteractivevideo'));
 echo html_writer::tag('p', get_string('act_intro', 'mod_aiinteractivevideo'));
 $source = credentials::source();
 echo html_writer::tag('p', get_string('act_credentials', 'mod_aiinteractivevideo', $source ?: 'not configured'));
-echo html_writer::link(new moodle_url('/admin/settings.php', ['section' => 'modsettingaiinteractivevideo']),
-    get_string('act_settings', 'mod_aiinteractivevideo'));
+echo html_writer::link(
+    new moodle_url('/admin/settings.php', ['section' => 'modsettingaiinteractivevideo']),
+    get_string('act_settings', 'mod_aiinteractivevideo')
+);
 if (credentials::central_installed()) {
-    echo ' · ' . html_writer::link(new moodle_url('/admin/settings.php', ['section' => 'local_aiconfig']),
-        get_string('act_central', 'mod_aiinteractivevideo'));
+    echo ' · ' . html_writer::link(
+        new moodle_url('/admin/settings.php', ['section' => 'local_aiconfig']),
+        get_string('act_central', 'mod_aiinteractivevideo')
+    );
 }
 
 if ($action === 'review') {
@@ -95,17 +106,24 @@ if ($action === 'review') {
             'version' => $release['version'], 'sha' => $release['sha'],
         ]));
         if ($balance !== 'Unknown' && $balance !== 'Unlimited' && (int)$balance < $release['price']) {
-            echo $OUTPUT->notification(get_string('act_low', 'mod_aiinteractivevideo'),
-                \core\output\notification::NOTIFY_WARNING);
+            echo $OUTPUT->notification(
+                get_string('act_low', 'mod_aiinteractivevideo'),
+                \core\output\notification::NOTIFY_WARNING
+            );
         }
         // All confirmation fields are POST only, and both values are revalidated against the live catalogue.
         echo html_writer::start_tag('form', ['action' => $url->out(false), 'method' => 'post']);
-        foreach (['sesskey' => sesskey(), 'action' => 'unlock', 'confirm' => 1,
-            'expected' => $release['price'], 'sha' => $release['sha']] as $name => $value) {
+        foreach (
+            ['sesskey' => sesskey(), 'action' => 'unlock', 'confirm' => 1,
+            'expected' => $release['price'], 'sha' => $release['sha']] as $name => $value
+        ) {
             echo html_writer::empty_tag('input', ['type' => 'hidden', 'name' => $name, 'value' => $value]);
         }
-        echo html_writer::tag('button', get_string('act_buy', 'mod_aiinteractivevideo', $release['price']),
-            ['type' => 'submit', 'class' => 'btn btn-primary']);
+        echo html_writer::tag(
+            'button',
+            get_string('act_buy', 'mod_aiinteractivevideo', $release['price']),
+            ['type' => 'submit', 'class' => 'btn btn-primary']
+        );
         echo html_writer::end_tag('form');
     }
     echo $OUTPUT->continue_button($url);
@@ -129,14 +147,23 @@ echo html_writer::tag('p', $release['ok']
         'version' => $release['version'], 'sha' => $release['sha']])
     : get_string('act_unavailable', 'mod_aiinteractivevideo', s($release['reason'])));
 if ($pending) {
-    echo $OUTPUT->notification(get_string('act_pending', 'mod_aiinteractivevideo'),
-        \core\output\notification::NOTIFY_WARNING);
+    echo $OUTPUT->notification(
+        get_string('act_pending', 'mod_aiinteractivevideo'),
+        \core\output\notification::NOTIFY_WARNING
+    );
 }
-$check = new single_button(new moodle_url($url, ['action' => 'check']),
-    get_string('act_check', 'mod_aiinteractivevideo'), 'post');
+$check = new single_button(
+    new moodle_url($url, ['action' => 'check']),
+    get_string('act_check', 'mod_aiinteractivevideo'),
+    'post'
+);
 $check->disabled = $source === '';
-$buy = new single_button(new moodle_url($url, ['action' => 'review']),
-    get_string('act_review', 'mod_aiinteractivevideo'), 'post', single_button::BUTTON_PRIMARY);
+$buy = new single_button(
+    new moodle_url($url, ['action' => 'review']),
+    get_string('act_review', 'mod_aiinteractivevideo'),
+    'post',
+    single_button::BUTTON_PRIMARY
+);
 $buy->disabled = $source === '' || $pending !== null || $state['status'] === 'unlocked' || !$release['ok'];
 echo $OUTPUT->render($check) . $OUTPUT->render($buy);
 echo $OUTPUT->footer();

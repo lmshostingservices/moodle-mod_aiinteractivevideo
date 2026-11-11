@@ -102,7 +102,9 @@ class manager {
      * @throws lmslabs_exception when LMS Labs is not set up, or UNRESOLVED when an earlier request is unfinished
      */
     public static function request_generation(
-        stdClass $instance, context_module $context, int $userid,
+        stdClass $instance,
+        context_module $context,
+        int $userid,
         bool $retry = false
     ): void {
         global $DB;
@@ -624,7 +626,10 @@ class manager {
      * @return array
      */
     public static function submit(
-        stdClass $attempt, stdClass $instance, stdClass $section, array $response,
+        stdClass $attempt,
+        stdClass $instance,
+        stdClass $section,
+        array $response,
         int $timespent
     ): array {
         global $DB;
@@ -739,6 +744,26 @@ class manager {
     }
 
     /**
+     * Adds the seconds the player reports as watched to the attempt (no database write).
+     *
+     * @param stdClass $attempt
+     * @param stdClass $instance
+     * @param string $watched ranges from the player
+     * @param int $duration video length reported by the player now (0 to use the stored length)
+     */
+    public static function add_watched(stdClass $attempt, stdClass $instance, string $watched, int $duration): void {
+        if ($watched === '') {
+            return;
+        }
+        $length = $duration > 0 && $duration <= 86400 ? $duration : (int)$instance->videoduration;
+        [$attempt->watchedranges, $attempt->watchedsecs] = engagement::merge(
+            $attempt->watchedranges ?? '',
+            $watched,
+            $length > 0 ? $length + 1 : 0
+        );
+    }
+
+    /**
      * Saves the video position and active time.
      *
      * @param stdClass $attempt
@@ -746,15 +771,21 @@ class manager {
      * @param float $position
      * @param int $elapsed active seconds since the last save
      * @param int $duration video length reported by the player
+     * @param string $watched seconds played since the last save, as ranges ("12-27,40-55")
      */
     public static function progress(
-        stdClass $attempt, stdClass $instance, float $position, int $elapsed,
-        int $duration
+        stdClass $attempt,
+        stdClass $instance,
+        float $position,
+        int $elapsed,
+        int $duration,
+        string $watched = ''
     ): void {
         global $DB;
         $attempt->position = max(0, min(86400, $position));
         $attempt->maxwatched = max((float)$attempt->maxwatched, $attempt->position);
         $attempt->activetime += max(0, min(120, $elapsed));
+        self::add_watched($attempt, $instance, $watched, $duration);
         $attempt->timemodified = time();
         $DB->update_record('aiinteractivevideo_attempt', $attempt);
         if ($duration > 0 && $duration <= 86400 && (int)$instance->videoduration !== $duration) {
@@ -771,16 +802,23 @@ class manager {
      * @param stdClass $course
      * @param context_module $context
      * @param int $elapsed last active seconds
+     * @param string $watched seconds played since the last save, as ranges
      * @return array summary
      */
     public static function finish(
-        stdClass $attempt, stdClass $instance, $cm, stdClass $course, context_module $context,
-        int $elapsed
+        stdClass $attempt,
+        stdClass $instance,
+        $cm,
+        stdClass $course,
+        context_module $context,
+        int $elapsed,
+        string $watched = ''
     ): array {
         global $DB, $CFG;
         require_once($CFG->dirroot . '/mod/aiinteractivevideo/lib.php');
         require_once($CFG->libdir . '/completionlib.php');
         if ($attempt->state === self::STATE_INPROGRESS) {
+            self::add_watched($attempt, $instance, $watched, 0);
             $attempt->state = self::STATE_FINISHED;
             $attempt->score = self::score($attempt);
             $attempt->maxscore = count(self::get_sections($instance->id));

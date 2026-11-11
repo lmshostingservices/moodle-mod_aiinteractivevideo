@@ -26,6 +26,7 @@ require(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/lib.php');
 require_once($CFG->libdir . '/completionlib.php');
 
+use mod_aiinteractivevideo\local\engagement;
 use mod_aiinteractivevideo\local\manager;
 use mod_aiinteractivevideo\local\transcript;
 
@@ -53,7 +54,7 @@ if ($instance->allowlearn) {
 if (!in_array($mode, ['learn', 'test'], true)) {
     $mode = manager::graded_mode($instance);
 }
-if (!in_array($tab, ['insights', 'attempts', 'attempt'], true)) {
+if (!in_array($tab, ['insights', 'learners', 'attempts', 'attempt'], true)) {
     $tab = 'insights';
 }
 
@@ -133,6 +134,9 @@ if ($userids !== null) {
     }
 }
 $sql = "SELECT a.id, a.userid, a.attempt, a.mode, a.state, a.score, a.maxscore, a.activetime, a.timestart, a.timefinish,
+               a.watchedsecs,
+               (SELECT COUNT(1) FROM {aiinteractivevideo_response} r
+                 WHERE r.attemptid = a.id AND (r.tries > 0 OR r.revealed = 1 OR r.skipped = 1)) AS answered,
                u.email, $userfields,
                (SELECT COALESCE(SUM(r.hintsused), 0) FROM {aiinteractivevideo_response} r WHERE r.attemptid = a.id) AS hints,
                (SELECT COALESCE(SUM(r.revealed), 0) FROM {aiinteractivevideo_response} r WHERE r.attemptid = a.id) AS reveals,
@@ -141,6 +145,128 @@ $sql = "SELECT a.id, a.userid, a.attempt, a.mode, a.state, a.score, a.maxscore, 
           JOIN {user} u ON u.id = a.userid
          WHERE a.aiinteractivevideoid = :instanceid AND a.mode = :mode $usersql
       ORDER BY u.lastname, u.firstname, a.attempt";
+
+// Video engagement per learner (everyone who can take the activity, including those who have not started).
+$duration = engagement::duration($instance, $sections);
+$learnerusers = engagement::learners($context, $instance, $groupmode ? (int)$currentgroup : 0);
+$engrows = engagement::rows($instance, $sections, $learnerusers, $mode);
+$totals = engagement::totals($engrows);
+$yesno = fn($b) => $b ? get_string('yes') : get_string('no');
+$resulttext = function ($res) use ($str) {
+    switch ($res->result) {
+        case engagement::RESULT_FIRST:
+            return $str('result_first');
+        case engagement::RESULT_LATER:
+            return $str('result_later', $res->tries);
+        case engagement::RESULT_WRONG:
+            return $str('result_wrong');
+        default:
+            return $str('status_notanswered');
+    }
+};
+$numberlist = fn(array $nums) => implode(', ', array_map(fn($n) => $str('qnumber', $n), $nums));
+
+if ($download && $tab === 'learners') {
+    $columns = [
+        'fullname' => get_string('fullname'),
+        'email' => get_string('email'),
+        'status' => $str('status'),
+        'attempts' => $str('attempts'),
+        'watchedpct' => $str('videowatched'),
+        'watchedtime' => $str('watchedtime'),
+        'wholevideo' => $str('wholevideo'),
+        'completed' => $str('interactionsdone'),
+        'alldone' => $str('alldone'),
+        'firsttry' => $str('correctfirsttry'),
+        'wrong' => $str('gotwrong'),
+        'notanswered' => $str('status_notanswered'),
+        'bestscore' => $str('bestscorecol'),
+        'activetime' => $str('activetime'),
+        'rewatches' => $str('rewatches'),
+        'lastactive' => $str('lastactive'),
+    ];
+    foreach ($sections as $i => $section) {
+        $columns['q' . $section->id] = $str('qnumber', $i + 1) . ' ' . format_string(
+            $section->title,
+            true,
+            ['context' => $context, 'escape' => false]
+        );
+    }
+    $out = [];
+    foreach ($engrows as $r) {
+        $line = [
+            'fullname' => fullname($r->user),
+            'email' => $r->user->email,
+            'status' => $str('learnerstatus_' . $r->status),
+            'attempts' => $r->attempts,
+            'watchedpct' => $r->watchedpct . '%',
+            'watchedtime' => transcript::clock($r->watchedsecs) . ' / ' . transcript::clock($duration),
+            'wholevideo' => $yesno($r->wholevideo),
+            'completed' => $r->answered . ' / ' . $r->total,
+            'alldone' => $yesno($r->alldone),
+            'firsttry' => $r->firsttry,
+            'wrong' => $numberlist($r->wrong),
+            'notanswered' => $r->status === 'notstarted' ? '' : $numberlist($r->notanswered),
+            'bestscore' => $r->bestpct === null ? '' : $r->bestpct . '%',
+            'activetime' => transcript::clock($r->activetime),
+            'rewatches' => $r->rewatches,
+            'lastactive' => $r->lastactive ? userdate($r->lastactive, get_string('strftimedatetimeshort', 'langconfig')) : '',
+        ];
+        foreach ($sections as $section) {
+            $line['q' . $section->id] = $r->status === 'notstarted' ? '' : $resulttext($r->results[$section->id]);
+        }
+        $out[] = $line;
+    }
+    \core\dataformat::download_data('aiinteractivevideo_' . $cm->id . '_learners_' . $mode, $download, $columns, $out);
+    die();
+}
+
+if ($download && $tab === 'insights') {
+    $stats = manager::section_stats($instance, $mode, $userids);
+    $missed = engagement::most_missed($sections, $engrows);
+    $columns = [
+        'number' => '#',
+        'title' => $str('interaction'),
+        'type' => $str('type'),
+        'time' => $str('videotime'),
+        'answered' => $str('answered'),
+        'wrong' => $str('gotwrong'),
+        'wrongpct' => $str('wrongrate'),
+        'names' => $str('whogotwrong'),
+        'firstpct' => $str('firsttryrate'),
+        'avgtries' => $str('averagetries'),
+        'avgtime' => $str('averagetime'),
+        'rewatches' => $str('rewatches'),
+        'hints' => $str('hints'),
+        'reveals' => $str('revealed'),
+        'skipped' => $str('skipped'),
+    ];
+    $out = [];
+    foreach ($sections as $i => $section) {
+        $st = $stats[$section->id] ?? null;
+        $ans = $st ? (int)$st->answered : 0;
+        $m = $missed[$section->id];
+        $out[] = [
+            'number' => $i + 1,
+            'title' => format_string($section->title, true, ['context' => $context, 'escape' => false]),
+            'type' => $str($section->type),
+            'time' => transcript::clock((float)$section->starttime) . ' - ' . transcript::clock((float)$section->endtime),
+            'answered' => $m->answered,
+            'wrong' => $m->wrong,
+            'wrongpct' => $m->answered ? $m->wrongpct . '%' : '',
+            'names' => implode('; ', $m->names),
+            'firstpct' => $ans ? round($st->firsttry / $ans * 100) . '%' : '',
+            'avgtries' => $ans ? round($st->tries / $ans, 1) : '',
+            'avgtime' => $ans ? transcript::clock($st->timespent / $ans) : '',
+            'rewatches' => $st ? (int)$st->rewatches : 0,
+            'hints' => $st ? (int)$st->hints : 0,
+            'reveals' => $st ? (int)$st->revealed : 0,
+            'skipped' => $st ? (int)$st->skipped : 0,
+        ];
+    }
+    \core\dataformat::download_data('aiinteractivevideo_' . $cm->id . '_interactions_' . $mode, $download, $columns, $out);
+    die();
+}
 
 if ($download && $tab === 'attempts') {
     $columns = [
@@ -153,6 +279,8 @@ if ($download && $tab === 'attempts') {
         'maxscore' => $str('total'),
         'percent' => $str('percentage'),
         'activetime' => $str('activetime'),
+        'watchedpct' => $str('videowatched'),
+        'completed' => $str('interactionsdone'),
         'hints' => $str('hints'),
         'reveals' => $str('revealed'),
         'rewatches' => $str('rewatches'),
@@ -160,19 +288,22 @@ if ($download && $tab === 'attempts') {
         'finished' => $str('status_finished'),
     ];
     $rs = $DB->get_recordset_sql($sql, $params);
+    $total = count($sections);
     $rows = new \core\dml\recordset_walk(
         $rs,
-        function ($a) {
+        function ($a) use ($duration, $total, $str) {
             return [
                 'fullname' => fullname($a),
                 'email' => $a->email,
-                'mode' => $a->mode,
+                'mode' => $a->mode === 'learn' ? $str('learnmode') : $str('testmode'),
                 'attempt' => $a->attempt,
-                'state' => $a->state,
+                'state' => $a->state === manager::STATE_FINISHED ? $str('status_finished') : $str('status_inprogress'),
                 'score' => $a->score,
                 'maxscore' => $a->maxscore,
                 'percent' => $a->maxscore ? round($a->score / $a->maxscore * 100, 1) : 0,
                 'activetime' => transcript::clock($a->activetime),
+                'watchedpct' => engagement::percent((int)$a->watchedsecs, $duration) . '%',
+                'completed' => $a->answered . ' / ' . $total,
                 'hints' => $a->hints,
                 'reveals' => $a->reveals,
                 'rewatches' => $a->rewatches,
@@ -188,7 +319,7 @@ if ($download && $tab === 'attempts') {
 
 // Tabs.
 $tabs = [];
-foreach (['insights' => $str('overview'), 'attempts' => $str('attempts')] as $key => $label) {
+foreach (['insights' => $str('overview'), 'learners' => $str('learners'), 'attempts' => $str('attempts')] as $key => $label) {
     $tabs[] = ['label' => $label, 'url' => (new moodle_url($baseurl, ['tab' => $key]))->out(false),
         'active' => $tab === $key || ($tab === 'attempt' && $key === 'attempts')];
 }
@@ -203,6 +334,7 @@ $templatedata = [
     'modetabs' => count($modetabs) > 1 ? $modetabs : [],
     'groupselector' => groups_print_activity_menu($cm, $baseurl, true),
     'insights' => $tab === 'insights',
+    'learnerslist' => $tab === 'learners',
     'attemptslist' => $tab === 'attempts',
     'attemptview' => $tab === 'attempt',
 ];
@@ -220,12 +352,30 @@ $avgpct = $finished ? array_sum(array_map(fn($a) => $a->maxscore ? $a->score / $
     / count($finished) : 0;
 $avgtime = $finished ? array_sum(array_map(fn($a) => $a->activetime, $finished)) / count($finished) : 0;
 $templatedata['kpis'] = [
-    ['label' => $str('learners'), 'value' => $learners, 'icon' => ['ic' => ['book' => true]]],
+    ['label' => $str('learnersstarted'), 'value' => $learners . ' / ' . max($learners, count($engrows)),
+        'icon' => ['ic' => ['book' => true]]],
     ['label' => $str('attempts'), 'value' => count($finished) . ' / ' . count($attempts),
         'icon' => ['ic' => ['clipboard' => true]]],
     ['label' => $str('percentage'), 'value' => round($avgpct) . '%', 'icon' => ['ic' => ['star' => true]]],
     ['label' => $str('averagetime'), 'value' => transcript::clock($avgtime), 'icon' => ['ic' => ['clock' => true]]],
 ];
+$pctof = fn($n) => $totals->learners ? (int)round($n / $totals->learners * 100) : 0;
+$templatedata['engagement'] = [
+    ['label' => $str('wholevideo'), 'value' => $totals->wholevideo, 'of' => $totals->learners,
+        'pct' => $pctof($totals->wholevideo), 'kind' => 'video'],
+    ['label' => $str('avgwatched'), 'value' => $totals->avgwatched . '%', 'of' => '', 'pct' => $totals->avgwatched,
+        'kind' => 'watch'],
+    ['label' => $str('alldone'), 'value' => $totals->alldone, 'of' => $totals->learners,
+        'pct' => $pctof($totals->alldone), 'kind' => 'done'],
+    ['label' => $str('learnerstatus_notstarted'), 'value' => $totals->notstarted, 'of' => $totals->learners,
+        'pct' => $pctof($totals->notstarted), 'kind' => 'none'],
+];
+$downloadfor = fn($t) => $OUTPUT->download_dataformat_selector(
+    $str('downloadcsv'),
+    $baseurl->out_omit_querystring(),
+    'download',
+    ['id' => $cm->id, 'tab' => $t, 'mode' => $mode]
+);
 
 if ($tab === 'insights') {
     $stats = manager::section_stats($instance, $mode, $userids);
@@ -284,8 +434,63 @@ if ($tab === 'insights') {
     $templatedata['rows'] = $rows;
     $templatedata['hasrows'] = !empty($rows);
     $templatedata['learnmode'] = $mode === 'learn';
+    $missed = [];
+    foreach (engagement::most_missed($sections, $engrows) as $m) {
+        if ($m->wrong < 1 || count($missed) >= 3) {
+            break;
+        }
+        $missed[] = [
+            'rank' => count($missed) + 1,
+            'number' => $m->number,
+            'title' => format_string($m->section->title, true, ['context' => $context, 'escape' => false]),
+            'typekey' => $m->section->type,
+            'typename' => $str($m->section->type),
+            'summary' => $str('missedsummary', (object)['wrong' => $m->wrong, 'answered' => $m->answered]),
+            'pct' => $m->wrongpct,
+            'names' => implode(', ', $m->names),
+        ];
+    }
+    $templatedata['missed'] = $missed;
+    $templatedata['hasmissed'] = !empty($missed);
+    $templatedata['download'] = $downloadfor('insights');
     $templatedata['hardest'] = $hardest && $hardest['pct'] < 100 ?
         format_string($hardest['title'], true, ['context' => $context, 'escape' => false]) . ' · ' . $hardest['pct'] . '%' : '';
+}
+
+if ($tab === 'learners') {
+    $list = [];
+    foreach ($engrows as $r) {
+        $started = $r->status !== 'notstarted';
+        $cells = [];
+        foreach ($sections as $i => $section) {
+            $res = $r->results[$section->id];
+            $cells[] = ['n' => $i + 1, 'kind' => $started ? $res->result : 'blank', 'label' => $resulttext($res),
+                'title' => format_string($section->title, true, ['context' => $context, 'escape' => false])];
+        }
+        $list[] = [
+            'fullname' => fullname($r->user),
+            'statuskey' => $r->status,
+            'status' => $str('learnerstatus_' . $r->status),
+            'started' => $started,
+            'watchedpct' => $r->watchedpct,
+            'watchlevel' => $r->watchedpct >= engagement::WHOLE_PERCENT ? 'good' : ($r->watchedpct >= 50 ? 'ok' : 'low'),
+            'watchedtime' => transcript::clock($r->watchedsecs) . ' / ' . transcript::clock($duration),
+            'wholevideo' => $r->wholevideo,
+            'done' => $r->answered . ' / ' . $r->total,
+            'alldone' => $r->alldone,
+            'cells' => $cells,
+            'wrong' => $r->wrong ? $numberlist($r->wrong) : '',
+            'best' => $r->bestpct === null ? '–' : $r->bestpct . '%',
+            'time' => transcript::clock($r->activetime),
+            'lastactive' => $r->lastactive ? userdate($r->lastactive, get_string('strftimedatetimeshort', 'langconfig')) : '–',
+            'viewurl' => $r->latestid ?
+                (new moodle_url($baseurl, ['tab' => 'attempt', 'attemptid' => $r->latestid]))->out(false) : '',
+        ];
+    }
+    $templatedata['learnerrows'] = $list;
+    $templatedata['haslearners'] = !empty($list);
+    $templatedata['qheads'] = array_map(fn($i) => ['n' => $i + 1], array_keys($sections));
+    $templatedata['download'] = $list ? $downloadfor('learners') : '';
 }
 
 if ($tab === 'attempts') {
@@ -302,6 +507,8 @@ if ($tab === 'attempts') {
             'percent' => $pct,
             'level' => $pct >= 75 ? 'good' : ($pct >= 50 ? 'ok' : 'bad'),
             'time' => transcript::clock($a->activetime),
+            'watchedpct' => engagement::percent((int)$a->watchedsecs, $duration),
+            'done' => $a->answered . ' / ' . count($sections),
             'hints' => $a->hints,
             'reveals' => $a->reveals,
             'rewatches' => $a->rewatches,
@@ -315,15 +522,25 @@ if ($tab === 'attempts') {
     $templatedata['actionurl'] = $baseurl->out(false);
     $templatedata['sesskey'] = sesskey();
     $templatedata['regradeurl'] = (new moodle_url($baseurl, ['action' => 'regrade', 'sesskey' => sesskey()]))->out(false);
-    $templatedata['download'] = $list ? $OUTPUT->download_dataformat_selector(
-        $str('download'),
-        $baseurl->out_omit_querystring(),
-        'download',
-        $baseurl->params()
-    ) : '';
+    $templatedata['download'] = $list ? $downloadfor('attempts') : '';
 }
 
 if ($tab === 'attempt') {
+    $detailstatus = function ($r, $res) use ($str) {
+        if ($res === engagement::RESULT_FIRST) {
+            return $str('result_first');
+        }
+        if ($res === engagement::RESULT_LATER) {
+            return $str('result_later', (int)$r->tries);
+        }
+        if ($res === engagement::RESULT_NONE) {
+            return $str('status_notanswered');
+        }
+        if (!empty($r->revealed)) {
+            return $str('status_revealed');
+        }
+        return !empty($r->skipped) ? $str('status_skipped') : $str('result_wrong');
+    };
     $attempt = $attempts[$attemptid] ?? null;
     if (!$attempt) {
         throw new moodle_exception('invalidrecord', 'error');
@@ -333,17 +550,14 @@ if ($tab === 'attempt') {
     foreach ($sections as $i => $section) {
         $r = $responses[$section->id] ?? null;
         $status = manager::status($r);
+        $res = engagement::result($r);
         $detail[] = [
             'number' => $i + 1,
+            'result' => $res,
             'title' => format_string($section->title, true, ['context' => $context, 'escape' => false]),
             'typekey' => $section->type,
             'typename' => $str($section->type),
-            'status' => $status === 'pending' && $r && $r->tries ? $str('wrong') : $str(
-                'status_' . (
-                    $status === 'pending' ?
-                    'notanswered' : $status
-                )
-            ),
+            'status' => $detailstatus($r, $res),
             'ok' => $r && $r->solved,
             'points' => $r ? (int)$r->points : 0,
             'tries' => $r ? (int)$r->tries : 0,
@@ -355,6 +569,11 @@ if ($tab === 'attempt') {
     $templatedata['detail'] = $detail;
     $templatedata['detailname'] = fullname($attempt);
     $templatedata['detailscore'] = $attempt->score . ' / ' . $attempt->maxscore;
+    $templatedata['detailwatched'] = $str('watchedof', (object)[
+        'pct' => engagement::percent((int)$attempt->watchedsecs, $duration),
+        'time' => transcript::clock((int)$attempt->watchedsecs),
+        'total' => transcript::clock($duration),
+    ]);
     $templatedata['backurl'] = (new moodle_url($baseurl, ['tab' => 'attempts']))->out(false);
 }
 
