@@ -2,6 +2,11 @@
 
 All notable changes to AI interactive video (mod_aiinteractivevideo) are documented here.
 
+## [v1.2.1] - 2026-11-13
+
+### Added
+- Works with Client Portal 2.0.1 and later: each LMS Labs AI call made in a client's course, or by a client's people, is reported to the portal with the credits it used, so the site owner can see and invoice each client's usage. The service's own figure is used when its reply gives one; otherwise the plugin's published price. Calls that fail and polled jobs are never counted twice. Nothing changes on sites without Client Portal.
+
 ## [v1.2.0] - 2026-11-11
 
 ### Added

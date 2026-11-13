@@ -170,6 +170,23 @@ class ai_generator {
      */
     public static function generate(\stdClass $instance, string $body): array {
         $result = lmslabs::send($body);
+        // Client Portal (when installed) bills the client. A replayed answer was already charged once, so the
+        // idempotency key makes sure it is counted once.
+        if (method_exists('\\local_clientportal\\api', 'record_lmslabs_call')) {
+            global $USER;
+            $request = json_decode($body, true);
+            $cm = get_coursemodule_from_instance('aiinteractivevideo', $instance->id, $instance->course, false, IGNORE_MISSING);
+            $context = $cm ? \context_module::instance($cm->id) : \context_course::instance($instance->course);
+            \local_clientportal\api::record_lmslabs_call(
+                (int)$USER->id,
+                (int)$context->id,
+                'mod_aiinteractivevideo',
+                ['success' => true],
+                lmslabs::COST,
+                'Interactive video activities',
+                (string)($request['idempotencyKey'] ?? '')
+            );
+        }
         $sections = self::import($result['output'], $instance);
         if (!$sections) {
             throw new lmslabs_exception(lmslabs_exception::BADRESPONSE);
